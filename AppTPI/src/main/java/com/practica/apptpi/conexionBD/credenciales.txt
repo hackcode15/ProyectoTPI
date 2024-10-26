@@ -1,0 +1,3 @@
+jdbc:mysql://localhost:3306/bbdd_tpi
+root
+Esteban7
