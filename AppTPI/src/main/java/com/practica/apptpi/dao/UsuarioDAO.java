@@ -22,14 +22,16 @@ public class UsuarioDAO {
     public List<Usuario> listar_usuarios() {
 
         List<Usuario> lista = new ArrayList<>();
-
+        
         String sql = "SELECT * FROM usuario";
 
         // try - catch - resources
-        try (Connection miConexion = con.dameConexion(); Statement miSentencia = miConexion.createStatement(); ResultSet rs = miSentencia.executeQuery(sql)) {
+        try (Connection miConexion = con.dameConexion(); 
+                Statement miSentencia = miConexion.createStatement(); 
+                ResultSet rs = miSentencia.executeQuery(sql)) {
 
             while (rs.next()) {
-                Usuario usuario = new Usuario(rs.getInt("id_usuario"), rs.getString("nombre"), rs.getString("contrasena"), rs.getString("correo"), rs.getBoolean("esAdmin"));
+                Usuario usuario = new Usuario(rs.getInt("id_usuario"), rs.getString("nombre"), rs.getString("apellido"), rs.getString("contrasena"), rs.getString("correo"), rs.getString("telefono"));
                 lista.add(usuario);
             }
 
@@ -43,23 +45,35 @@ public class UsuarioDAO {
 
     public boolean agregar_usuario(Usuario usuario) {
 
-        String sql = "{CALL agregar_usuario(?, ?, ?, ?)}";
+        String sql = "{CALL agregar_usuario(?, ?, ?, ?, ?)}";
 
         try (Connection miConexion = con.dameConexion(); CallableStatement miSentencia = miConexion.prepareCall(sql)) {
 
             // Campos obligatorios
+            // Nombre
             miSentencia.setString(1, usuario.getNombre());
-            miSentencia.setString(2, usuario.getContrasena());
-
-            // Campo opcional
-            if (usuario.getCorreo() != null && usuario.getCorreo().isEmpty()) {
-                miSentencia.setNull(3, java.sql.Types.VARCHAR);
+            
+            // Campos opcionales
+            // Apellido
+            if(usuario.getApellido() != null && usuario.getApellido().isEmpty()){
+                miSentencia.setNull(2, java.sql.Types.VARCHAR);
             } else {
-                miSentencia.setString(3, usuario.getCorreo());
+                miSentencia.setString(2, usuario.getApellido());
             }
-
-            // Campo obligatorio
-            miSentencia.setBoolean(4, usuario.isEsAdmin());
+            
+            // Campos obligatorios
+            // Contraseña
+            miSentencia.setString(3, usuario.getContrasena());
+            // Correo
+            miSentencia.setString(4, usuario.getCorreo());
+            
+            // Campos opcionales
+            // Telefono
+            if(usuario.getTelefono() != null && usuario.getTelefono().isEmpty()){
+                miSentencia.setNull(5, java.sql.Types.VARCHAR);
+            } else {
+                miSentencia.setString(5, usuario.getTelefono());
+            }
 
             int filasAfectadas = miSentencia.executeUpdate();
 
@@ -82,7 +96,7 @@ public class UsuarioDAO {
 
             miSentencia.setInt(1, usuario.getId_usuario());
             miSentencia.setString(2, usuario.getContrasena());
-            miSentencia.setBoolean(3, usuario.isEsAdmin());
+            miSentencia.setString(3, usuario.getTelefono());
             
             int filasAfectadas = miSentencia.executeUpdate();
             
@@ -130,7 +144,14 @@ public class UsuarioDAO {
             ResultSet rs = miSentencia.executeQuery();
 
             if (rs.next()) {
-                Usuario usuario = new Usuario(rs.getInt("id_usuario"), rs.getString("nombre"), rs.getString("contrasena"), rs.getString("correo"), rs.getBoolean("esAdmin"));
+                Usuario usuario = new Usuario(
+                        rs.getInt("id_usuario"), 
+                        rs.getString("nombre"),
+                        rs.getString("apellido"), 
+                        rs.getString("contrasena"), 
+                        rs.getString("correo"), 
+                        rs.getString("telefono")
+                );
                 return usuario;
             }
 

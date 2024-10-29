@@ -9,15 +9,17 @@ public class Usuario {
 
     private int id_usuario;
     private String nombre;
+    private String apellido;
     private String contrasena;
     private String correo;
-    private boolean esAdmin;
+    private String telefono;
 
-    public Usuario(String nombre, String contrasena, String correo, boolean esAdmin) {
+    public Usuario(String nombre, String apellido, String contrasena, String correo, String telefono) {
         this.nombre = nombre;
+        this.apellido = apellido;
         this.contrasena = contrasena;
         this.correo = correo;
-        this.esAdmin = esAdmin;
+        this.telefono = telefono;
     }
     
 }

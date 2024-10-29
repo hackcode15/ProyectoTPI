@@ -36,24 +36,22 @@ public class UsuarioControlador {
         System.out.println("== Agregar Usuario ==");
         System.out.print("Nombre: ");
         String nombre = sc.nextLine();
+        System.out.print("Apellido (enter para omitir): ");
+        String apellido = sc.nextLine();
         System.out.print("Contraseña: ");
         String contrasena = sc.nextLine();
-        System.out.print("Correo (enter para omitir): ");
+        System.out.print("Correo: ");
         String correo = sc.nextLine();
-        System.out.print("¿Es administrador? (Si/No): ");
-        String esAdmin = sc.next();
+        System.out.print("Telefono (enter para omitir): ");
+        String telefono = sc.nextLine();
         
         Usuario usuario = new Usuario();
         
         usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
         usuario.setContrasena(contrasena);
         usuario.setCorreo(correo);
-        
-        if(esAdmin.equalsIgnoreCase("si")){
-            usuario.setEsAdmin(true);
-        }else{
-            usuario.setEsAdmin(false);
-        }
+        usuario.setTelefono(telefono);
         
         if(usuarioDAO.agregar_usuario(usuario)){
             System.out.println("\nUsuario agregado con exito");
@@ -67,9 +65,10 @@ public class UsuarioControlador {
     public void listarUsuarios(){
         
         List<Usuario> lista = usuarioDAO.listar_usuarios();
-        System.out.printf("%-16s %-16s %-16s %-30s %-16s%n", "ID USUARIO", "NOMBRE", "CONTRASEÑA", "CORREO", "ES ADMIN");
+        System.out.printf("%-16s %-16s %-16s %-16s %-30s %-16s", "ID USUARIO", "NOMBRE", "APELLIDO", "CONTRASEÑA", "CORREO", "TELEFONO");
+        System.out.println("");
         lista.stream()
-                .map(p -> String.format("%-16s %-16s %-16s %-30s %-16s", p.getId_usuario(), p.getNombre(), p.getContrasena(), p.getCorreo(), p.isEsAdmin()))
+                .map(p -> String.format("%-16s %-16s %-16s %-16s %-30s %-16s", p.getId_usuario(), p.getNombre(), p.getApellido(), p.getContrasena(), p.getCorreo(), p.getTelefono()))
                 .forEach(System.out::println);
         System.out.println("");
         
@@ -89,15 +88,11 @@ public class UsuarioControlador {
             sc.nextLine();
             System.out.print("Nueva contraseña: ");
             String contrasena = sc.nextLine();
-            System.out.print("¿Es administrador? (Si/No): ");
-            String esAdmin = sc.next();
+            System.out.print("Nuevo telefono: ");
+            String telefono = sc.nextLine();
          
             usuario.setContrasena(contrasena);
-            if(esAdmin.equalsIgnoreCase("si")){
-                usuario.setEsAdmin(true);
-            }else{
-                usuario.setEsAdmin(false);
-            }
+            usuario.setTelefono(telefono);
             
             if(usuarioDAO.actualizar_usuario(usuario)){
                 System.out.println("Usuario actualizado con exito");
