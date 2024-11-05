@@ -1,17 +1,26 @@
 package com.practica.apptpi.entidades;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter @Setter @ToString
-public class Cliente {
+@NoArgsConstructor // Generacion de constructor con todos los parametros
+@AllArgsConstructor // Generacion de constructor sin parametros
+@Getter // Generacion de metodos Getters
+@Setter // Generacion de metodos Setters
+@ToString(callSuper = true) // Generacion del metodo ToString (con los atributos de la clase padre)
+@SuperBuilder // Simplifica la creacion de objetos (soportar herencia)
+public class Cliente extends Usuario{
 
-    private int id_cliente; // PK
-    private String nombre;
-    private String dni;
-    private String telefono;
+    // Atributos
+    private int id_cliente;
     private String domicilio;
-    private int id_usuario; // FK
+    private String tipoRegimenLaboral;
+
+    // Constructor personalizado
+    public Cliente(String nombre, String apellido, String contrasena, String correo, String telefono, String domicilio, String tipoRegimenLaboral) {
+        super(nombre, apellido, contrasena, correo, telefono);
+        this.domicilio = domicilio;
+        this.tipoRegimenLaboral = tipoRegimenLaboral;
+    }
     
 }

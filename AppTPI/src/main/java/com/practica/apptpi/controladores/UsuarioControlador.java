@@ -1,8 +1,10 @@
-package com.practica.apptpi.controladores;
+// NO HARIA FALTA
 
-import java.util.*;
+//package com.practica.apptpi.controladores;
+
+/*import java.util.*;
 import com.practica.apptpi.dao.UsuarioDAO;
-import com.practica.apptpi.entidades.Usuario;
+import com.practica.apptpi.entidades.Usuario;*/
 
 /*
 Controlador:
@@ -13,7 +15,7 @@ Valida datos
 Manejo de errores
 */
 
-public class UsuarioControlador {
+/*public class UsuarioControlador {
 
     private UsuarioDAO usuarioDAO;
     private Scanner sc;
@@ -22,13 +24,6 @@ public class UsuarioControlador {
         this.usuarioDAO = new UsuarioDAO();
         this.sc = new Scanner(System.in);
     }
-    
-    /*
-    C
-    R
-    U
-    D
-    */
     
     // CREATE - Metodo para agregar
     public void agregarUsuario(){
@@ -43,17 +38,28 @@ public class UsuarioControlador {
         System.out.print("Correo: ");
         String correo = sc.nextLine();
         System.out.print("Telefono (enter para omitir): ");
-        String telefono = sc.nextLine();
+        String telefono = sc.nextLine();*/
         
-        Usuario usuario = new Usuario();
+        // Forma normal
+        /*Usuario usuario = new Usuario();
         
         usuario.setNombre(nombre);
         usuario.setApellido(apellido);
         usuario.setContrasena(contrasena);
         usuario.setCorreo(correo);
-        usuario.setTelefono(telefono);
+        usuario.setTelefono(telefono);*/
         
-        if(usuarioDAO.agregar_usuario(usuario)){
+        // Usando Builder de lombok
+        /*Usuario usuario = Usuario.builder()
+                .nombre(nombre)
+                .apellido(apellido)
+                .apellido(apellido)
+                .contrasena(contrasena)
+                .correo(correo)
+                .telefono(telefono)
+                .build();
+        
+        if(usuarioDAO.create(usuario)){
             System.out.println("\nUsuario agregado con exito");
         }else{
             System.out.println("Error");
@@ -64,7 +70,7 @@ public class UsuarioControlador {
     // READ - Metodo para listar los usuarios
     public void listarUsuarios(){
         
-        List<Usuario> lista = usuarioDAO.listar_usuarios();
+        List<Usuario> lista = usuarioDAO.read();
         System.out.printf("%-16s %-16s %-16s %-16s %-30s %-16s", "ID USUARIO", "NOMBRE", "APELLIDO", "CONTRASEÑA", "CORREO", "TELEFONO");
         System.out.println("");
         lista.stream()
@@ -81,7 +87,7 @@ public class UsuarioControlador {
         System.out.print("Digite el ID: ");
         int id = sc.nextInt();
         
-        Usuario usuario = usuarioDAO.buscar_por_id(id);
+        Usuario usuario = usuarioDAO.searchById(id);
         
         if(usuario != null){
             
@@ -94,10 +100,10 @@ public class UsuarioControlador {
             usuario.setContrasena(contrasena);
             usuario.setTelefono(telefono);
             
-            if(usuarioDAO.actualizar_usuario(usuario)){
+            if(usuarioDAO.update(usuario)){
                 System.out.println("Usuario actualizado con exito");
             }else{
-                System.out.println("Error");
+                System.out.println("Error al actualizar");
             }
             
         }else{
@@ -113,12 +119,15 @@ public class UsuarioControlador {
         System.out.print("Digite el ID: ");
         int id = sc.nextInt();
         
-        Usuario usuario = usuarioDAO.buscar_por_id(id);
+        Usuario usuario = usuarioDAO.searchById(id);
         
         if(usuario != null){
             
-            usuarioDAO.eliminar_usuario(usuario);
-            System.out.println("Usuario eliminado con exito");
+            if(usuarioDAO.delete(usuario)){
+                System.out.println("Usuario eliminado con exito");
+            }else{
+                System.out.println("Error al eliminar");
+            }
             
         }else{
             System.out.println("No existe un usuario con ese ID");
@@ -126,4 +135,4 @@ public class UsuarioControlador {
         
     }
     
-}
+}*/

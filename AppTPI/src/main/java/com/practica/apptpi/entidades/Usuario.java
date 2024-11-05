@@ -1,10 +1,13 @@
 package com.practica.apptpi.entidades;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter @ToString
+//@Builder
+@SuperBuilder // Cambiamos @Builder por @SuperBuilder para soportar herencia
 public class Usuario {
 
     private int id_usuario;
