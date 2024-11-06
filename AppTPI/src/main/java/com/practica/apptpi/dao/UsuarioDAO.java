@@ -1,168 +1,153 @@
-// NO HARIA FALTA
+package com.practica.apptpi.dao;
 
-
-/*package com.practica.apptpi.dao;
-
-import com.practica.apptpi.entidades.Usuario;
 import com.practica.apptpi.conexionBD.ConectorBD;
+import com.practica.apptpi.crud.OperacionesCrudAdaptadora;
+import com.practica.apptpi.entidades.Usuario;
 import java.sql.*;
 import java.util.*;
 
-public class UsuarioDAO extends OperacionesCRUD<Usuario> {
+public class UsuarioDAO extends OperacionesCrudAdaptadora<Usuario> {
 
     @Override
-    public boolean create(Usuario usuario) {
-    
-        String sql = "{CALL agregar_usuario(?, ?, ?, ?, ?)}";
+    public List<Usuario> read(){
+        
+        /*CREATE PROCEDURE listar_usuarios
+        AS
+        BEGIN
+            SELECT
+                u.dni,
+                u.nombre,
+                u.apellido,
+                u.contrasena,
+                u.correo,
+                u.telefono
+            FROM usuario u
+            LEFT JOIN cliente c ON u.dni = c.dni
+            LEFT JOIN mecanico m ON u.dni = m.dni
+            WHERE c.dni IS NULL AND m.dni IS NULL;
+        END*/
+        
+        String sql = "{CALL listar_usuarios}";
         
         try(Connection miConexion = ConectorBD.dameConexion();
-                CallableStatement miSentencia = miConexion.prepareCall(sql)){
+                CallableStatement miSentencia = miConexion.prepareCall(sql);
+                ResultSet rs = miSentencia.executeQuery()){
             
-            miSentencia.setString(1, usuario.getNombre());
+            List<Usuario> lista = new ArrayList<>();
             
-            if(usuario.getApellido() != null && usuario.getApellido().isEmpty()){
-                miSentencia.setNull(2, java.sql.Types.VARCHAR);
-            } else {
-                miSentencia.setString(2, usuario.getApellido());
+            while(rs.next()){
+                
+                Usuario usuario = Usuario.builder()
+                        .dni(rs.getInt("dni"))
+                        .nombre(rs.getString("nombre"))
+                        .apellido(rs.getString("apellido"))
+                        .contrasena(rs.getString("contrasena"))
+                        .correo(rs.getString("correo"))
+                        .telefono(rs.getString("telefono"))
+                        .build();
+                
+                lista.add(usuario);
+                
             }
             
-            miSentencia.setString(3, usuario.getContrasena());
-            miSentencia.setString(4, usuario.getCorreo());
+            return lista;
             
-            if(usuario.getTelefono() != null && usuario.getTelefono().isEmpty()){
-                miSentencia.setNull(5, java.sql.Types.VARCHAR);
-            } else {
-                miSentencia.setString(5, usuario.getTelefono());
+        }catch(SQLException e){
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }
+        
+    }
+    
+    @Override
+    public boolean delete(Usuario usuario){
+        
+        String sql = "DELETE FROM usuario WHERE dni = ?";
+
+        try(Connection miConexion = ConectorBD.dameConexion()){
+            
+            miConexion.setAutoCommit(false);
+            
+            try(PreparedStatement miSentencia = miConexion.prepareStatement(sql)){
+                
+                miSentencia.setInt(1, usuario.getDni());
+                
+                int filasAfectadas = miSentencia.executeUpdate();
+                
+                if(filasAfectadas == 0){
+                    throw new SQLException("Error en eliminar usuario, ninguna fila afectada");
+                }
+                
+            }catch(SQLException e){
+                miConexion.rollback();
+                System.out.println("Error al eliminar usuario, se revertio la transaccion");
+            }finally{
+                miConexion.setAutoCommit(true);
             }
-
-            int filasAfectadas = miSentencia.executeUpdate();
-
-            return filasAfectadas > 0;
+            
+            miConexion.commit();
+            return true;
             
         }catch(SQLException e){
             System.out.println("Error: " + e.getMessage());
             return false;
         }
-        
-    }
-
-    @Override
-    public List<Usuario> read() {
-        
-        List<Usuario> lista = new ArrayList<>();
-        
-        String sql = "SELECT * FROM usuario";
-
-        // try - catch - resources
-        try (Connection miConexion = ConectorBD.dameConexion(); 
-                Statement miSentencia = miConexion.createStatement(); 
-                ResultSet rs = miSentencia.executeQuery(sql)) {
-
-            while (rs.next()) {
-                
-                Usuario usuario = new Usuario(
-                        rs.getInt("id_usuario"), 
-                        rs.getString("nombre"), 
-                        rs.getString("apellido"), 
-                        rs.getString("contrasena"), 
-                        rs.getString("correo"), 
-                        rs.getString("telefono"));
-                
-                lista.add(usuario);
-            
-            }
-            
-            return lista;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
 
     }
-
+    
     @Override
-    public boolean update(Usuario usuario) {
+    public Usuario searchByDni(int dni){
         
-        String sql = "{CALL actualizar_usuario(?, ?, ?)}";
-
-        try (Connection miConexion = ConectorBD.dameConexion(); 
-                CallableStatement miSentencia = miConexion.prepareCall(sql)) {
-
-            miSentencia.setInt(1, usuario.getId_usuario());
-            miSentencia.setString(2, usuario.getContrasena());
-            miSentencia.setString(3, usuario.getTelefono());
-            
-            int filasAfectadas = miSentencia.executeUpdate();
-            
-            return filasAfectadas > 0;
-
-        } catch (Exception e) {
-            System.out.println("Error al actualizar: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    @Override
-    public boolean delete(Usuario usuario) {
+        /*CREATE PROCEDURE buscar_usuario
+            @dni BIGINT
+        AS
+        BEGIN
+            SELECT
+                u.dni,
+                u.nombre,
+                u.apellido,
+                u.contrasena,
+                u.correo,
+                u.telefono
+            FROM usuario u
+            LEFT JOIN cliente c ON u.dni = c.dni
+            LEFT JOIN mecanico m ON u.dni = m.dni
+            WHERE u.dni = @dni AND c.dni IS NULL AND m.dni IS NULL;
+        END*/
         
-        String sql = "DELETE FROM usuario WHERE id_usuario = ?";
+        String sql = "{CALL buscar_usuario(?)}";
         
         try(Connection miConexion = ConectorBD.dameConexion();
-                PreparedStatement miSentencia = miConexion.prepareStatement(sql)){
+                CallableStatement miSentencia = miConexion.prepareCall(sql)){
             
-            miSentencia.setInt(1, usuario.getId_usuario());
+            miSentencia.setInt(1, dni);
             
-            int filasAfectadas = miSentencia.executeUpdate();
-            
-            return filasAfectadas > 0;
-            
-        }catch(Exception e){
-            System.out.println("Error al eliminar: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    @Override
-    public Usuario searchById(int id) {
-        
-        String sql = "SELECT * FROM usuario WHERE id_usuario = ?";
-
-        try (Connection miConexion = ConectorBD.dameConexion(); 
-                PreparedStatement miSentencia = miConexion.prepareStatement(sql)) {
-
-            miSentencia.setInt(1, id);
-
             try(ResultSet rs = miSentencia.executeQuery()){
                 
-                if (rs.next()) {
+                if(rs.next()){
                     
-                    Usuario usuario = new Usuario(
-                            rs.getInt("id_usuario"), 
-                            rs.getString("nombre"),
-                            rs.getString("apellido"), 
-                            rs.getString("contrasena"), 
-                            rs.getString("correo"), 
-                            rs.getString("telefono")
-                    );
+                    Usuario usuario = Usuario.builder()
+                        .dni(rs.getInt("dni"))
+                        .nombre(rs.getString("nombre"))
+                        .apellido(rs.getString("apellido"))
+                        .contrasena(rs.getString("contrasena"))
+                        .correo(rs.getString("correo"))
+                        .telefono(rs.getString("telefono"))
+                        .build();
                     
                     return usuario;
-                
+                    
                 }else{
                     return null;
                 }
-            
+                
             }
-
-        } catch (SQLException e) {
+            
+        }catch(SQLException e){
             System.out.println("Error: " + e.getMessage());
             return null;
         }
-
+        
     }
-
-}*/
+    
+}

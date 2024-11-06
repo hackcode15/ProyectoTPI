@@ -1,4 +1,4 @@
-package com.practica.apptpi.controladores;
+/*package com.practica.apptpi.controladores;
 
 import com.practica.apptpi.dao.VehiculoDAO;
 import com.practica.apptpi.entidades.Vehiculo;
@@ -41,4 +41,4 @@ public class VehiculoControlador {
         
     }
     
-}
+}*/

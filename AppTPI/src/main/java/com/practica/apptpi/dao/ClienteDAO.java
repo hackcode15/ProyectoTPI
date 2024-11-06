@@ -1,165 +1,216 @@
 package com.practica.apptpi.dao;
 
 import com.practica.apptpi.conexionBD.ConectorBD;
+import com.practica.apptpi.crud.OperacionesCrud;
 import com.practica.apptpi.entidades.Cliente;
 import java.sql.*;
 import java.util.*;
 
-public class ClienteDAO extends OperacionesCRUD<Cliente> {
+public class ClienteDAO implements OperacionesCrud<Cliente> {
 
+    // CREATE LISTO
     @Override
-    public boolean create(Cliente cliente){
+    public boolean create(Cliente cliente) {
+
+        // Procedimiento almacenado - Codigo SQL Server
+        /*CREATE PROCEDURE agregar_cliente
+                @dni BIGINT,
+                @nombre VARCHAR(100),
+                @apellido VARCHAR(45),
+                @contrasena VARCHAR(100),
+                @correo VARCHAR(100),
+                @telefono VARCHAR(100),
+                @domicilio VARCHAR(100),
+                @RegimenLaboral VARCHAR(100),
+                @rol VARCHAR(20)
+        AS
+        BEGIN
+                INSERT INTO usuario(dni, nombre, apellido, contrasena, correo, telefono, rol)
+                VALUES(@dni, @nombre, @apellido, @contrasena, @correo, @telefono, @rol);
+                INSERT INTO cliente(dni, domicilio, RegimenLaboral)
+                VALUES(@dni, @domicilio, @RegimenLaboral);
+        END*/
         
-        // No se puede recuperar el ID usando un procedimiento almacenado
-        //String sqlUsuario = "{CALL agregar_usuario(?, ?, ?, ?, ?)}"; // (nombre, apellido, contrasena, correo, telefono)
+
+        String sql = "{CALL agregar_cliente(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         
-        // Lo hacemos con una consulta preparada
-        String sqlUsuario = "INSERT INTO usuario(nombre, apellido, contrasena, correo, telefono) VALUES(?, ?, ?, ?, ?)";
-        
-        String sqlCliente = "{CALL agregar_cliente(?, ?, ?)}"; // (domicilio, tipoRegimenLaboral, id_usuario)
-        
-        Connection miConexion = null;
-        //CallableStatement miSentenciaUsuario = null;
-        PreparedStatement miSentenciaUsuario = null;
-        CallableStatement miSentenciaCliente= null;
-        
-        try{
+        try(Connection miConexion = ConectorBD.dameConexion()){
             
-            miConexion = ConectorBD.dameConexion();
             miConexion.setAutoCommit(false);
             
-            //miSentenciaUsuario = miConexion.prepareCall(sqlUsuario, Statement.RETURN_GENERATED_KEYS);
-            
-            miSentenciaUsuario = miConexion.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS);
-            
-            miSentenciaUsuario.setString(1, cliente.getNombre());
-            miSentenciaUsuario.setString(2, cliente.getApellido());
-            miSentenciaUsuario.setString(3, cliente.getContrasena());
-            miSentenciaUsuario.setString(4, cliente.getCorreo());
-            miSentenciaUsuario.setString(5, cliente.getTelefono());
-            
-            int filasAfectadasEnUsuario = miSentenciaUsuario.executeUpdate();
-            
-            if(filasAfectadasEnUsuario == 0){
-                throw new SQLException("Error: La creacion del usuario fallo, ninguna fila afectada");
-            }
-            
-            try(ResultSet idGenerado = miSentenciaUsuario.getGeneratedKeys()){
+            try(CallableStatement miSentencia = miConexion.prepareCall(sql)){
                 
-                if(idGenerado.next()){
-                    cliente.setId_usuario(idGenerado.getInt(1));
-                }else{
-                    throw new SQLException("Error: La creacion del usuario fallo, no se obtuvo el ID");
+                // Manejo de excepciones 
+                if (cliente.getDni() <= 0) { 
+                    throw new SQLException("El DNI es obligatorio");
+                }
+                if (cliente.getNombre() == null || cliente.getNombre().isEmpty()) { 
+                    throw new SQLException("El nombre es obligatorio"); 
+                }
+                if (cliente.getContrasena()== null || cliente.getContrasena().isEmpty()) { 
+                    throw new SQLException("La contraseña es obligatorio"); 
+                }
+                if (cliente.getCorreo()== null || cliente.getCorreo().isEmpty()) { 
+                    throw new SQLException("El correo es obligatorio"); 
+                }
+                if (cliente.getRegimenLaboral()== null || cliente.getRegimenLaboral().isEmpty()) { 
+                    throw new SQLException("El tipo de regimen laboral es obligatorio"); 
                 }
                 
-            }
-            
-            miSentenciaCliente = miConexion.prepareCall(sqlCliente);
-            
-            miSentenciaCliente.setString(1, cliente.getDomicilio());
-            miSentenciaCliente.setString(2, cliente.getTipoRegimenLaboral());
-            miSentenciaCliente.setInt(3, cliente.getId_usuario());
-            
-            int filasAfectadasEnCliente = miSentenciaCliente.executeUpdate();
-            
-            if(filasAfectadasEnCliente == 0){
-                throw new SQLException("Error: La creacion del cliente fallo, ninguna fila afectada");
+                miSentencia.setInt(1, cliente.getDni());
+                miSentencia.setString(2, cliente.getNombre());
+                
+                // campo opcional
+                if(cliente.getApellido() != null && !cliente.getApellido().isEmpty()){
+                    miSentencia.setString(3, cliente.getApellido());
+                }else{
+                    miSentencia.setNull(3, java.sql.Types.VARCHAR);
+                }
+                
+                miSentencia.setString(4, cliente.getContrasena());
+                miSentencia.setString(5, cliente.getCorreo());
+                miSentencia.setString(6, cliente.getTelefono());
+                
+                // campo opcional
+                if(cliente.getDomicilio() != null && !cliente.getDomicilio().isEmpty()){
+                    miSentencia.setString(7, cliente.getDomicilio());
+                }else{
+                    miSentencia.setNull(7, java.sql.Types.VARCHAR);
+                }
+                
+                miSentencia.setString(8, cliente.getRegimenLaboral());
+                
+                miSentencia.setString(9, cliente.getRol());
+                
+                // ejecutamos
+                int filasAfectadas = miSentencia.executeUpdate();
+                
+                if(filasAfectadas == 0){
+                    throw new SQLException("Error al registrar el cliente, ninguna fila afectada");
+                }
+                
+            }catch(SQLException e){
+                miConexion.rollback();
+                System.out.println("Error: " + e.getMessage());
+                return false;
+            }finally{
+                miConexion.setAutoCommit(true);
             }
             
             miConexion.commit();
             return true;
-            
-        } catch(SQLException e){
-            
-            // En caso de error
-            try{
-                
-                if(miConexion != null){
-                    miConexion.rollback(); // Revertimos la operacion
-                }
-                
-            }catch(SQLException ex){
-                System.out.println("Error al revertir la operacion: " + ex.getMessage());
-            }
-            
-            System.out.println("Error en la creacion del cliente: " + e.getMessage());
+
+        }catch(SQLException e){
+            System.out.println("Error: " + e.getMessage());
             return false;
-            
-        } finally {
-            
-            try{
-                // cierre de recursos
-                if(miSentenciaUsuario != null && miSentenciaCliente != null && miConexion != null){
-                    
-                    miSentenciaUsuario.close();
-                    miSentenciaCliente.close();
-                    
-                    //miConexion.setAutoCommit(true); // Opcional
-                    miConexion.close();
-                    
-                }
-                
-            }catch(SQLException e){
-                System.out.println("Error al cerrar recursos: " + e.getMessage());
-            }
-            
         }
         
     }
-
+    
     @Override
-    public List<Cliente> read() {
-
+    public List<Cliente> read(){
+        
+        /*CREATE PROCEDURE listar_clientes
+        AS
+        BEGIN
+                select
+                        u.dni,
+                        u.nombre,
+                        u.apellido,
+                        u.contrasena,
+                        u.correo,
+                        u.telefono,
+                        c.fechaIngreso,
+                        c.domicilio,
+                        c.RegimenLaboral
+                from cliente c
+                left join usuario u on c.dni = u.dni
+        END*/
+        
         String sql = "{CALL listar_clientes}";
         
-        List<Cliente> lista = new ArrayList<>();
-        
         try(Connection miConexion = ConectorBD.dameConexion();
-                CallableStatement miSentencia = miConexion.prepareCall(sql)){
+                CallableStatement miSentencia = miConexion.prepareCall(sql);
+                ResultSet rs = miSentencia.executeQuery()){
             
-            try(ResultSet rs = miSentencia.executeQuery()){
+            List<Cliente> lista = new ArrayList<>();
+            
+            while(rs.next()){
                 
-                while(rs.next()){
-                    
-                    Cliente cliente = Cliente.builder()
-                            .nombre(rs.getString("nombre"))
-                            .apellido(rs.getString("apellido"))
-                            .correo(rs.getString("correo"))
-                            .telefono(rs.getString("telefono"))
-                            .domicilio(rs.getString("domicilio"))
-                            .tipoRegimenLaboral(rs.getString("tipoRegimenLaboral"))
-                            .build();
-                    
-                    lista.add(cliente);
-                    
-                }
+                Cliente cliente = Cliente.builder()
+                        .dni(rs.getInt("dni"))
+                        .nombre(rs.getString("nombre"))
+                        .apellido(rs.getString("apellido"))
+                        .contrasena(rs.getString("contrasena"))
+                        .correo(rs.getString("correo"))
+                        .telefono(rs.getString("telefono"))
+                        .fechaIngreso(rs.getDate("fechaIngreso"))
+                        .domicilio(rs.getString("fechaIngreso"))
+                        .RegimenLaboral(rs.getString("RegimenLaboral"))
+                        .build();
                 
-                return lista;
+                lista.add(cliente);
                 
             }
+            
+            return lista;
             
         }catch(SQLException e){
             System.out.println("Error: " + e.getMessage());
             return null;
         }
+        
     }
-
+    
+    // UPDATE LISTO
     @Override
     public boolean update(Cliente cliente) {
+
         
-        // Actualizar la contraseña y el telefono por ejemplo
-        String sql = "{CALL actualizar_usuario_cliente(?, ?, ?)}"; // (id_usuario, contrasena, telefono)
+        /*
+        CREATE PROCEDURE actualizar_cliente
+            @dni BIGINT,
+            @contrasena VARCHAR(100),
+            @telefono VARCHAR(100),
+            @correo VARCHAR(100),
+            @domicilio VARCHAR(100)
+        AS
+        BEGIN
+            UPDATE usuario SET contrasena = @contrasena, telefono = @telefono, correo = @correo WHERE dni = @dni;
+            UPDATE cliente SET domicilio = @domicilio WHERE dni = @dni;
+        END
+        */
         
-        try(Connection miConexion = ConectorBD.dameConexion();
-                CallableStatement miSentencia = miConexion.prepareCall(sql)){
+        String sql = "{CALL actualizar_cliente(?, ?, ?, ?, ?)}";
+        
+        try(Connection miConexion = ConectorBD.dameConexion()){
             
-            miSentencia.setInt(1, cliente.getId_usuario());
-            miSentencia.setString(2, cliente.getContrasena());
-            miSentencia.setString(3, cliente.getTelefono());
+            miConexion.setAutoCommit(false);
             
-            int filasAfectadas = miSentencia.executeUpdate();
-        
-            return filasAfectadas > 0;
+            try(CallableStatement miSentencia = miConexion.prepareCall(sql)){
+                
+                miSentencia.setInt(1, cliente.getDni());
+                miSentencia.setString(2, cliente.getContrasena());
+                miSentencia.setString(3, cliente.getTelefono());
+                miSentencia.setString(4, cliente.getCorreo());
+                miSentencia.setString(5, cliente.getDomicilio());
+
+                int filasAfectadas = miSentencia.executeUpdate();
+
+                if(filasAfectadas == 0){
+                    throw new SQLException("Error en actualizar cliente, ninguna fila afectada");
+                }
+                
+            }catch(SQLException e){
+                miConexion.rollback();
+                System.out.println("Error en la actualizar cliente, se revertio la transaccion");
+                return false;
+            }finally{
+                miConexion.setAutoCommit(true);
+            }
+            
+            miConexion.commit();
+            return true;
             
         }catch(SQLException e){
             System.out.println("Error: " + e.getMessage());
@@ -168,48 +219,74 @@ public class ClienteDAO extends OperacionesCRUD<Cliente> {
         
     }
 
+    // DELETE LISTO
     @Override
     public boolean delete(Cliente cliente) {
-        
-        String slq = "{CALL eliminar_cliente(?)}";
-        
-        try(Connection miConexion = ConectorBD.dameConexion();
-                CallableStatement miSentencia = miConexion.prepareCall(slq)){
-            
-            miSentencia.setInt(1, cliente.getId_usuario());
-            
-            int filasAfectadas = miSentencia.executeUpdate();
-            
-            return filasAfectadas > 0;
-            
-        }catch(SQLException e){
-            System.out.println("Error: " + e.getMessage());
-            return false;
-        }
-        
-    }
 
-    @Override
-    public Cliente searchById(int id_cliente) {
-
-        String sql = "{CALL buscar_cliente(?)}";
+        // Para la eliminacion en cascada
+        String sql = "DELETE FROM usuario WHERE dni = ?";
         
         try(Connection miConexion = ConectorBD.dameConexion();
                 PreparedStatement miSentencia = miConexion.prepareStatement(sql)){
             
-            miSentencia.setInt(1, id_cliente);
+            miSentencia.setInt(1, cliente.getDni());
+            
+            int filasAfectadas = miSentencia.executeUpdate();
+            
+            return filasAfectadas > 0;
+            
+        }catch(SQLException e){
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+
+    }
+
+    // BUSCAR POR DNI LISTO
+    @Override
+    public Cliente searchByDni(int dni) {
+
+        /*CREATE PROCEDURE ver_datos_del_cliente
+            @dni BIGINT
+        AS
+        BEGIN
+            SELECT
+                u.dni,
+                u.nombre,
+                u.apellido,
+                u.contrasena,
+                u.correo,
+                u.telefono,
+                c.fechaIngreso,
+                c.domicilio,
+                c.RegimenLaboral AS 'regimen'
+            FROM cliente c
+            LEFT JOIN usuario u ON c.dni = u.dni
+            WHERE c.dni = @dni
+            ORDER BY u.nombre
+        END*/
+        
+        String sql = "{CALL ver_datos_del_cliente(?)}";
+        
+        try(Connection miConexion = ConectorBD.dameConexion();
+                CallableStatement miSentencia = miConexion.prepareCall(sql)){
+            
+            miSentencia.setInt(1, dni);
             
             try(ResultSet rs = miSentencia.executeQuery()){
                 
                 if(rs.next()){
                     
                     Cliente cliente = Cliente.builder()
-                            .id_usuario(rs.getInt("id_usuario"))
-                            .id_cliente(rs.getInt("id_cliente"))
+                            .dni(rs.getInt("dni"))
                             .nombre(rs.getString("nombre"))
+                            .apellido(rs.getString("apellido"))
+                            .contrasena(rs.getString("contrasena"))
                             .correo(rs.getString("correo"))
+                            .telefono(rs.getString("telefono"))
+                            .fechaIngreso(rs.getDate("fechaIngreso"))
                             .domicilio(rs.getString("domicilio"))
-                            .tipoRegimenLaboral(rs.getString("tipoRegimenLaboral"))
+                            .RegimenLaboral(rs.getString("regimen"))
                             .build();
                     
                     return cliente;

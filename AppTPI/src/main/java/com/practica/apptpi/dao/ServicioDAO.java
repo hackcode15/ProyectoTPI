@@ -1,11 +1,12 @@
-package com.practica.apptpi.dao;
+/*package com.practica.apptpi.dao;
 
+import com.practica.apptpi.crud.OperacionesCrudAdaptadora;
 import com.practica.apptpi.conexionBD.ConectorBD;
 import com.practica.apptpi.entidades.Servicio;
 import java.sql.*;
 import java.util.*;
 
-public class ServicioDAO extends OperacionesCRUD<Servicio> {
+public class ServicioDAO extends OperacionesCrudAdaptadora<Servicio> {
 
     @Override
     public boolean create(Servicio entidad) {
@@ -61,3 +62,4 @@ public class ServicioDAO extends OperacionesCRUD<Servicio> {
     }
 
 }
+*/
