@@ -6,8 +6,13 @@ import com.practica.apptpi.entidades.Cliente;
 import java.sql.*;
 import java.util.*;
 
+// TERMINADO
 public class ClienteDAO implements OperacionesCrud<Cliente> {
 
+    // M.V.C (Modelo Vista Controlador)
+    
+    // GENERACION DEL CRUD BASICO
+    
     // CREATE LISTO
     @Override
     public boolean create(Cliente cliente) {
@@ -166,7 +171,6 @@ public class ClienteDAO implements OperacionesCrud<Cliente> {
     @Override
     public boolean update(Cliente cliente) {
 
-        
         /*
         CREATE PROCEDURE actualizar_cliente
             @dni BIGINT,

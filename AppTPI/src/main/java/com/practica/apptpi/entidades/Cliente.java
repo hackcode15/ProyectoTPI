@@ -11,7 +11,7 @@ public class Cliente extends Usuario{
     private Date fechaIngreso;
     private String domicilio;
     private String RegimenLaboral;
-    
+
     // Cliente
     /*
     solo puede hacer

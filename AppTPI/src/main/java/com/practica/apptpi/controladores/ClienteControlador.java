@@ -2,20 +2,24 @@ package com.practica.apptpi.controladores;
 
 import com.practica.apptpi.dao.ClienteDAO;
 import com.practica.apptpi.entidades.Cliente;
+import com.practica.apptpi.entidades.Usuario;
 import java.util.*;
 
+// TERMINADO
 public class ClienteControlador {
 
     private ClienteDAO clienteDAO;
     private Scanner sc;
+    private Usuario usuarioActual;
 
-    public ClienteControlador() {
+    public ClienteControlador(Usuario usuarioActual) {
+        this.usuarioActual = usuarioActual;
         clienteDAO = new ClienteDAO();
         sc = new Scanner(System.in);
     }
 
     // usu del metodo: create
-    public void registrarCliente(String rol) {
+    public void registrarseComoCliente() {
 
         System.out.println("== REGISTRATE COMO CLIENTE ==");
 
@@ -46,7 +50,7 @@ public class ClienteControlador {
         System.out.print("Regimen Laboral: ");
         String regimen = sc.nextLine();
 
-        Cliente cliente = Cliente.builder()
+        Cliente clienteNuevo = Cliente.builder()
                 .dni(dni)
                 .nombre(nombre)
                 .apellido(apellido)
@@ -58,18 +62,195 @@ public class ClienteControlador {
                 .rol("Cliente")
                 .build();
 
-        if (clienteDAO.create(cliente)) {
-            System.out.println("Cliente \"" + cliente.getNombre() + "\" agregado con exito");
+        if (clienteDAO.create(clienteNuevo)) {
+            System.out.println("Cliente \"" + clienteNuevo.getNombre() + "\" agregado con exito");
         }
 
     }
 
     // uso del metodo: read
-    public void listarClientes(String rol) {
+    // SOLO LOS MECANICOS PUEDEN VER LA LISTA DE CLIENTES
+    public void listarClientes() {
 
-        System.out.println("== TODOS LOS CLIENTES ==");
+        if (usuarioActual.getRol().equalsIgnoreCase("Mecanico")) {
 
-        List<Cliente> listaClientes = clienteDAO.read();
+            System.out.println("== TODOS LOS CLIENTES ==");
+
+            List<Cliente> listaClientes = clienteDAO.read();
+
+            // formato de impresion
+            System.out.printf(
+                    "%-16s %-16s %-30s %-16s %-16s %-30s %-16s%n",
+                    "NOMBRE",
+                    "APELLIDO",
+                    "CORREO",
+                    "TELEFONO",
+                    "FECHA_INGRESO",
+                    "DOMICILIO",
+                    "REGIMEN");
+
+            // expresiones lambda
+            listaClientes.stream().
+                    map(p -> String.format(
+                    "%-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
+                    p.getNombre(),
+                    p.getApellido(),
+                    p.getCorreo(),
+                    p.getTelefono(),
+                    p.getFechaIngreso(),
+                    p.getDomicilio(),
+                    p.getRegimenLaboral()))
+                    .forEach(System.out::println);
+
+            System.out.println("");
+
+        } else {
+            System.out.println("Acceso denegado");
+        }
+
+    }
+
+    // usu del metodo: update
+    // Un mecanico no puede tener acceso a este metodo
+    public void modificarMisDatos() {
+
+        // Manejo de error
+        if (!usuarioActual.getRol().equalsIgnoreCase("Cliente")) {
+            System.out.println("Error: no tienes accceso para modificar cliente");
+            return;
+        }
+
+        System.out.println("== ACTUALIZA TUS DATOS ==");
+
+        System.out.print("Digite su DNI: ");
+        int dni = sc.nextInt();
+
+        // Manejo de error
+        if (dni != usuarioActual.getDni()) {
+            System.out.println("No puedes modificar datos de otro cliente");
+            return;
+        }
+
+        sc.nextLine();
+
+        Cliente cliente = clienteDAO.searchByDni(dni);
+
+        // Manejo de error
+        if (cliente == null) {
+            System.out.println("Error: el cliente no existe");
+            return;
+        }
+
+        System.out.println("Hola \"" + cliente.getNombre() + "\", estas por actualizar tus datos");
+
+        System.out.print("Nueva contraseña: ");
+        String nuevaContrasena = sc.nextLine();
+
+        System.out.print("Nuevo Telefono: ");
+        String nuevaTelefono = sc.nextLine();
+
+        System.out.print("Nuevo Correo: ");
+        String nuevaCorreo = sc.nextLine();
+
+        System.out.print("Nueva Domicilio: ");
+        String nuevaDomicilio = sc.nextLine();
+
+        cliente.setContrasena(nuevaContrasena);
+        cliente.setTelefono(nuevaTelefono);
+        cliente.setCorreo(nuevaCorreo);
+        cliente.setDomicilio(nuevaDomicilio);
+
+        if (clienteDAO.update(cliente)) {
+            System.out.println("\"" + cliente.getNombre() + "\" has actualizado correctamente tus datos");
+        }
+
+    }
+
+    // usu del metodo: delete
+    // NO TIENEN ACCESO LOS MECANICOS A ESTE METODO
+    public void eliminarMiCuenta() {
+
+        if (!usuarioActual.getRol().equalsIgnoreCase("Cliente")) {
+            System.out.println("Error: no tienes acceso");
+            return;
+        }
+
+        System.out.println("== ELIMINAR TU CUENTA ==");
+
+        System.out.print("Digita tu DNI: ");
+        int dni = sc.nextInt();
+
+        Cliente cliente = clienteDAO.searchByDni(dni);
+
+        // Manejo de posibles errores
+        if (cliente == null) {
+            System.out.println("Error: el cliente no existe");
+        }
+        if (dni != usuarioActual.getDni()) {
+            System.out.println("Error: no puedes eliminar a otro cliente");
+        }
+
+        if (clienteDAO.delete(cliente)) {
+            System.out.println("Cliente \"" + cliente.getNombre() + "\" has eliminado tu cuenta correctamente");
+        }
+
+    }
+
+    // usu del metodo: searchByDni
+    // distintos casos para diferentes roles
+    public void verDatos() {
+
+        System.out.println("== OBTENER INFORMACION DEL CLIENTE ==");
+        System.out.print("Digite su DNI: ");
+        int dni = sc.nextInt();
+
+        Cliente cliente = clienteDAO.searchByDni(dni);
+
+        if (cliente == null) {
+            System.out.println("Error: el cliente no existe");
+            return;
+        }
+
+        if (usuarioActual.getRol().equalsIgnoreCase("Mecanico")) {
+            dameDatosResumidos(cliente);
+        } else if (usuarioActual.getRol().equalsIgnoreCase("Cliente")) {
+            dameDatosCompletos(cliente);
+        }
+
+    }
+
+    // METODOS ESPECIFICOS
+    // listar todos los datos del cliente
+    private void dameDatosCompletos(Cliente cliente) {
+
+        System.out.printf(
+                "%-16s %-16s %-16s %-16s %-30s %-16s %-30s %-16s%n",
+                "DNI",
+                "NOMBRE",
+                "APELLIDO",
+                "CONTRASEÑA",
+                "CORREO",
+                "TELEFONO",
+                "DOMICILIO",
+                "REGIMEN");
+
+        System.out.printf(
+                "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
+                cliente.getDni(),
+                cliente.getNombre(),
+                cliente.getApellido(),
+                cliente.getContrasena(),
+                cliente.getCorreo(),
+                cliente.getTelefono(),
+                cliente.getDomicilio(),
+                cliente.getRegimenLaboral()
+        );
+
+        System.out.println("");
+
+    }
+
+    private void dameDatosResumidos(Cliente cliente) {
 
         System.out.printf(
                 "%-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s%n",
@@ -82,163 +263,19 @@ public class ClienteControlador {
                 "DOMICILIO",
                 "REGIMEN");
 
-        listaClientes.stream().
-                map(p -> String.format(
-                        "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s", 
-                        p.getDni(),
-                        p.getNombre(),
-                        p.getApellido(),
-                        p.getCorreo(),
-                        p.getTelefono(),
-                        p.getFechaIngreso(),
-                        p.getDomicilio(),
-                        p.getRegimenLaboral()))
-                .forEach(System.out::println);
-        
+        System.out.printf(
+                "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
+                cliente.getDni(),
+                cliente.getNombre(),
+                cliente.getApellido(),
+                cliente.getCorreo(),
+                cliente.getTelefono(),
+                cliente.getFechaIngreso(),
+                cliente.getDomicilio(),
+                cliente.getRegimenLaboral()
+        );
+
         System.out.println("");
-
-    }
-
-    // usu del metodo: update
-    public void modificarMisDatos(String rol) {
-
-        System.out.println("== ACTUALIZA TUS DATOS ==");
-
-        System.out.print("Digite su DNI: ");
-        int dni = sc.nextInt();
-
-        sc.nextLine();
-
-        Cliente cliente = clienteDAO.searchByDni(dni);
-
-        if (cliente != null) {
-
-            System.out.println("Hola \"" + cliente.getNombre() + "\", estas por actualizar tus datos");
-
-            System.out.print("Nueva contraseña: ");
-            String nuevaContrasena = sc.nextLine();
-
-            System.out.print("Nuevo Telefono: ");
-            String nuevaTelefono = sc.nextLine();
-
-            System.out.print("Nuevo Correo: ");
-            String nuevaCorreo = sc.nextLine();
-
-            System.out.print("Nueva Domicilio: ");
-            String nuevaDomicilio = sc.nextLine();
-
-            cliente.setContrasena(nuevaContrasena);
-            cliente.setTelefono(nuevaTelefono);
-            cliente.setCorreo(nuevaCorreo);
-            cliente.setDomicilio(nuevaDomicilio);
-
-            if (clienteDAO.update(cliente)) {
-                System.out.println("\"" + cliente.getNombre() + "\" has actualizado correctamente tus datos");
-            } else {
-                System.out.println("Error al actualizar");
-            }
-
-        } else {
-            System.out.println("Error: el cliente no existe");
-        }
-
-    }
-
-    // usu del metodo: delete
-    // no importa el rol, ya que tanto los clientes como mecanicos pueden usarlo
-    public void eliminarMiCuenta() {
-
-        System.out.println("== ELIMINAR CUENTA DE CLIENTE ==");
-
-        System.out.print("Digite su DNI: ");
-        int dni = sc.nextInt();
-
-        Cliente cliente = clienteDAO.searchByDni(dni);
-
-        if (cliente != null) {
-
-            if (clienteDAO.delete(cliente)) {
-                System.out.println("Cliente \"" + cliente.getNombre() + "\" has eliminado tu cuenta correctamente");
-            }
-
-        } else {
-            System.out.println("Error: el cliente no existe");
-        }
-
-    }
-
-    // usu del metodo: searchByDni
-    // distintos casos para diferentes roles
-    public void verDatos(String rol) {
-
-        System.out.println("== MOSTRAR TODA TU INFORMACION ==");
-        System.out.print("Digite su DNI: ");
-        int dni = sc.nextInt();
-
-        Cliente cliente = clienteDAO.searchByDni(dni);
-
-        // En caso de que un mecanico quiera ver los datos de un cliente
-        if (cliente != null) {
-
-            if (rol.equalsIgnoreCase("Cliente")) {
-
-                System.out.printf(
-                        "%-16s %-16s %-16s %-16s %-30s %-16s %-30s %-16s%n",
-                        "DNI",
-                        "NOMBRE",
-                        "APELLIDO",
-                        "CONTRASEÑA",
-                        "CORREO",
-                        "TELEFONO",
-                        "DOMICILIO",
-                        "REGIMEN");
-
-                System.out.printf(
-                        "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
-                        cliente.getDni(),
-                        cliente.getNombre(),
-                        cliente.getApellido(),
-                        cliente.getContrasena(),
-                        cliente.getCorreo(),
-                        cliente.getTelefono(),
-                        cliente.getDomicilio(),
-                        cliente.getRegimenLaboral()
-                );
-
-                System.out.println("");
-
-            } else if (rol.equalsIgnoreCase("Mecanico")) {
-
-                System.out.printf(
-                        "%-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s%n",
-                        "DNI",
-                        "NOMBRE",
-                        "APELLIDO",
-                        "CORREO",
-                        "TELEFONO",
-                        "FECHA_INGRESO",
-                        "DOMICILIO",
-                        "REGIMEN");
-
-                System.out.printf(
-                        "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
-                        cliente.getDni(),
-                        cliente.getNombre(),
-                        cliente.getApellido(),
-                        cliente.getCorreo(),
-                        cliente.getTelefono(),
-                        cliente.getFechaIngreso(),
-                        cliente.getDomicilio(),
-                        cliente.getRegimenLaboral()
-                );
-
-                System.out.println("");
-
-            }
-
-        } else {
-            System.out.println("Error: el cliente no existe");
-        }
 
     }
 

@@ -1,89 +1,432 @@
-CREATE DATABASE proyectoBD;
+-- ******************************* CREACION DE LA BASE DE DATOS *************************************
+-- CREATE DATABASE proyectoBD;
 
+-- ******************************* USO DE LA BASE DE DATOS ********************************************
 USE proyectoBD;
 
-/*
-Monotributista
-Responsable Inscripto
-No Responsable Inscripto
-Exento
-*/
+-- ******************************** CREACIONES DE TABLAS******************************************************
+
+SELECT 1 FROM usuario WHERE dni = 46924236 AND contrasena = 'micontra123';
 
 
-CREATE TABLE usuario (
-	-- informacion comun
-	id_usuario INT NOT NULL IDENTITY(1,1),
+/*CREATE TABLE usuario (
+	dni BIGINT NOT NULL,
     nombre VARCHAR(45) NOT NULL,
 	apellido VARCHAR(45),
     contrasena VARCHAR(100) NOT NULL,
     correo VARCHAR(100) NOT NULL,
 	telefono VARCHAR(100),
-    PRIMARY KEY(id_usuario)
-);
+    PRIMARY KEY(dni)
+);*/
 
-CREATE TABLE cliente (
-	-- campos adicionales especificos
-	id_cliente INT NOT NULL IDENTITY(1,1),
+/*CREATE TABLE cliente (
+	dni BIGINT NOT NULL,
+	fechaIngreso DATETIME DEFAULT GETDATE(),
     domicilio VARCHAR(100),
-	tipoRegimenLaboral VARCHAR(100),
-    id_usuario INT NOT NULL, -- referencia a usuario
-    PRIMARY KEY(id_cliente), 
-	-- relacion con la tabla usuario
-    CONSTRAINT fk_cliente FOREIGN KEY(id_usuario) REFERENCES usuario(id_usuario)
-);
+	RegimenLaboral VARCHAR(100) NOT NULL,
+    PRIMARY KEY(dni), 
+    CONSTRAINT fk_cliente FOREIGN KEY(dni) REFERENCES usuario(dni) ON DELETE CASCADE
+);*/
 
-CREATE TABLE administrador (
-	-- campos adicionales especificos
-	id_administrador INT NOT NULL IDENTITY(1,1),
-	area_trabajo VARCHAR(100) NOT NULL,
-	estado VARCHAR(100) DEFAULT 'ACTIVO',
-    id_usuario INT NOT NULL, -- referencia a usuario
-    PRIMARY KEY(id_administrador),
-	-- relacion con la tabla usuario
-    CONSTRAINT fk_administrador FOREIGN KEY(id_usuario) REFERENCES usuario(id_usuario)
-);
+/*CREATE TABLE mecanico (
+	dni BIGINT NOT NULL,
+	fechaIngreso DATETIME DEFAULT GETDATE(),
+	sueldo DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY(dni),
+    CONSTRAINT fk_administrador FOREIGN KEY(dni) REFERENCES usuario(dni) ON DELETE CASCADE
+);*/
 
-CREATE TABLE vehiculo (
+/*CREATE TABLE vehiculo (
+	dni INT,
 	id_vehiculo INT NOT NULL IDENTITY(1,1),
     marca VARCHAR(45) NOT NULL,
     modelo VARCHAR(45) NOT NULL,
     anio INT NOT NULL,
     precio DECIMAL(10, 2) NOT NULL,
     estado VARCHAR(45) DEFAULT 'DISPONIBLE',
-    PRIMARY KEY(id_vehiculo)
-);
+    PRIMARY KEY(id_vehiculo),
+	CONSTRAINT fk_cliente_vehiculo FOREIGN KEY(dni) REFERENCES cliente(dni) ON DELETE CASCADE
+);*/
 
-CREATE TABLE servicio (
+/*CREATE TABLE servicio (
 	id_servicio INT NOT NULL IDENTITY(1,1),
 	nombre VARCHAR(45) NOT NULL,
 	costo FLOAT NOT NULL,
 	estado VARCHAR(45) DEFAULT 'DISPONIBLE',
 	PRIMARY KEY(id_servicio)
-);
+);*/
 
-CREATE TABLE turno (
+/*CREATE TABLE turno (
 	id_turno INT NOT NULL IDENTITY(1,1),
-	id_cliente INT NOT NULL,
+	dni BIGINT NOT NULL,
 	id_vehiculo INT NOT NULL,
 	id_servicio INT NOT NULL,
 	fecha DATE DEFAULT GETDATE() NOT NULL,
 	costo_total DECIMAL(10,2) NOT NULL,
 	estado BIT NOT NULL,
 	PRIMARY KEY(id_turno),
-	CONSTRAINT fk_turno_cliente FOREIGN KEY(id_cliente) REFERENCES cliente(id_cliente),
+	CONSTRAINT fk_turno_cliente FOREIGN KEY(dni) REFERENCES cliente(dni),
 	CONSTRAINT fk_turno_vehiculo FOREIGN KEY(id_vehiculo) REFERENCES vehiculo(id_vehiculo),
 	CONSTRAINT fk_turno_servicio FOREIGN KEY(id_servicio) REFERENCES servicio(id_servicio)
-);
+);*/
 
+-- ************************************ SEDEERS ***********************************************
+
+-- Seeder para la tabla Usuario
+/*INSERT INTO usuario (dni, nombre, apellido, contrasena, correo, telefono)
+VALUES
+(12345678, 'Juan', 'Gomez', 'contraseña123', 'juan.gomez@ejemplo.com', '555-1234'),
+(87654321, 'María', 'Fernández', 'abc456def', 'maria.fernandez@ejemplo.com', '555-5678'),
+(46924236, 'Diego', 'Gomez', 'micontra123', 'diego.gomez@ejemplo.com', '555-9012'),
+(24681012, 'Ana', 'Martínez', 'mno012pqr', 'ana.martinez@ejemplo.com', '555-3456'),
+(46813579, 'Pedro', 'Sánchez', 'stu345vwx', 'pedro.sanchez@ejemplo.com', '555-7890'),
+(97531246, 'Sofía', 'Díaz', 'yz456abc', 'sofia.diaz@ejemplo.com', '555-2468'),
+(31415926, 'Miguel', 'Torres', 'def789ghi', 'miguel.torres@ejemplo.com', '555-6789'),
+(65432109, 'Laura', 'Ramírez', 'jkl012mno', 'laura.ramirez@ejemplo.com', '555-0123'),
+(98765432, 'David', 'Castillo', 'pqr345stu', 'david.castillo@ejemplo.com', '555-4567'),
+(54321098, 'Alejandra', 'Herrera', 'vwx678yz', 'alejandra.herrera@ejemplo.com', '555-8901');*/
+
+-- Seeder para la tabla Cliente
+/*INSERT INTO cliente (dni, fechaIngreso, domicilio, RegimenLaboral)
+VALUES
+(12345678, GETDATE(), '123 Calle Principal', 'Exento'),
+(87654321, GETDATE(), '456 Avenida del Robler', 'Responsable Inscripto'),
+(24681012, GETDATE(), '789 Calle del Olmo', 'Monotributista'),
+(46813579, GETDATE(), '321 Calle del Pino', 'Exento'),
+(97531246, GETDATE(), '654 Bulevar del Maple', 'Monotributista');*/
+
+-- Seeder para la tabla Mecanico
+/*INSERT INTO mecanico (dni, fechaIngreso, sueldo)
+VALUES
+(46924236, GETDATE(), 50000.00),
+(31415926, GETDATE(), 55000.00),
+(65432109, GETDATE(), 60000.00);*/
+
+-- ******************************************* MODIFICACION Y ACTUALIZACINO EN USUARIO ***************************************************************
+
+-- Agrega la columna rol
+-- ALTER TABLE usuario ADD rol VARCHAR(20) NOT NULL DEFAULT 'Cliente';
+
+-- Actualizar roles de usuarios que son cliente
+--UPDATE usuario SET rol = 'Cliente' WHERE dni IN (SELECT dni FROM cliente);
+
+-- Actualizar roles de usuarios que son mecánicos
+-- UPDATE usuario SET rol = 'Mecanico' WHERE dni IN (SELECT dni FROM mecanico);
+
+
+
+-- ******************************************** PROCEDIMIENTOS ALMACENADOS ********************************************************************
+-- esta
+/*CREATE PROCEDURE agregar_mecanico
+	@dni BIGINT,
+	@nombre VARCHAR(100),
+	@apellido VARCHAR(100),
+    @contrasena VARCHAR(100),
+    @correo VARCHAR(100),
+	@telefono VARCHAR(100),
+	@sueldo DECIMAL(10, 2)
+AS
+BEGIN
+	INSERT INTO usuario(dni, nombre, apellido, contrasena, correo, telefono)
+	VALUES(@dni, @nombre, @apellido, @contrasena, @correo, @telefono);
+	INSERT INTO mecanico(dni, sueldo)
+	VALUES(@dni, @sueldo);
+END*/
+
+-- esta
+/*CREATE PROCEDURE listar_mecanicos
+AS
+BEGIN
+	SELECT 
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.telefono,
+		m.fechaIngreso,
+		m.sueldo
+	FROM mecanico m
+	LEFT JOIN usuario u ON m.dni = u.dni
+END*/
+
+-- esta
+/*CREATE PROCEDURE actualizar_mecanico
+	@dni BIGINT,
+	@contrasena VARCHAR(100),
+	@telefono VARCHAR(100),
+	@correo VARCHAR(100),
+	@sueldo DECIMAL(10, 2)
+AS
+BEGIN
+	UPDATE usuario SET contrasena = @contrasena, telefono = @telefono, correo = @correo WHERE dni = @dni;
+	UPDATE mecanico SET sueldo = @sueldo WHERE dni = @dni;
+END*/
+
+-- esta
+/*CREATE PROCEDURE buscar_mecanico
+	@dni BIGINT
+AS
+BEGIN
+	SELECT 
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.telefono,
+		m.fechaIngreso,
+		m.sueldo
+	FROM mecanico m
+	LEFT JOIN usuario u ON m.dni = u.dni
+	WHERE m.dni = @dni
+END*/
+
+-- esta
+/*CREATE PROCEDURE agregar_cliente
+	@dni BIGINT,
+	@nombre VARCHAR(100),
+	@apellido VARCHAR(45),
+    @contrasena VARCHAR(100),
+    @correo VARCHAR(100),
+	@telefono VARCHAR(100),
+	@domicilio VARCHAR(100),
+	@RegimenLaboral VARCHAR(100),
+	@rol VARCHAR(20)
+AS
+BEGIN
+	INSERT INTO usuario(dni, nombre, apellido, contrasena, correo, telefono, rol)
+	VALUES(@dni, @nombre, @apellido, @contrasena, @correo, @telefono, @rol);
+	INSERT INTO cliente(dni, domicilio, RegimenLaboral)
+	VALUES(@dni, @domicilio, @RegimenLaboral);
+END*/
+
+-- esta (Del lado del mecanico)
+/*CREATE PROCEDURE listar_clientes
+AS
+BEGIN
+	select
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.contrasena,
+		u.correo,
+		u.telefono,
+		c.fechaIngreso,
+		c.domicilio,
+		c.RegimenLaboral
+	from cliente c
+	left join usuario u on c.dni = u.dni
+END*/
+
+-- esta (Del lado del mecanico)
+/*CREATE PROCEDURE buscar_cliente
+	@dni BIGINT
+AS
+BEGIN
+	SELECT
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.telefono,
+		c.fechaIngreso,
+		c.domicilio,
+		c.RegimenLaboral AS 'regimen'
+	FROM cliente c
+	LEFT JOIN usuario u ON c.dni = u.dni
+	WHERE c.dni = @dni
+	ORDER BY u.nombre
+END*/
+
+-- esta (Del lado del cliente)
+/*CREATE PROCEDURE ver_datos_del_cliente
+	@dni BIGINT
+AS
+BEGIN
+	SELECT
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.contrasena,
+		u.correo,
+		u.telefono,
+		c.fechaIngreso,
+		c.domicilio,
+		c.RegimenLaboral AS 'regimen'
+	FROM cliente c
+	LEFT JOIN usuario u ON c.dni = u.dni
+	WHERE c.dni = @dni
+	ORDER BY u.nombre
+END*/
+
+-- esta (Del lado del cliente)
+/*CREATE PROCEDURE actualizar_cliente
+	@dni BIGINT,
+	@contrasena VARCHAR(100),
+	@telefono VARCHAR(100),
+	@correo VARCHAR(100),
+	@domicilio VARCHAR(100)
+AS
+BEGIN
+	UPDATE usuario SET contrasena = @contrasena, telefono = @telefono, correo = @correo WHERE dni = @dni;
+	UPDATE cliente SET domicilio = @domicilio WHERE dni = @dni;
+END*/
+
+
+-- esta
+/*CREATE PROCEDURE listar_usuarios
+AS
+BEGIN
+	SELECT
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.contrasena,
+		u.correo,
+		u.telefono
+	FROM usuario u
+	LEFT JOIN cliente c ON u.dni = c.dni
+	LEFT JOIN mecanico m ON u.dni = m.dni
+	WHERE c.dni IS NULL AND m.dni IS NULL;
+END*/
+
+-- esta
+/*CREATE PROCEDURE buscar_usuario
+	@dni BIGINT
+AS
+BEGIN
+	SELECT
+		u.dni,
+		u.nombre,
+		u.apellido,
+		u.contrasena,
+		u.correo,
+		u.telefono
+	FROM usuario u
+	LEFT JOIN cliente c ON u.dni = c.dni
+	LEFT JOIN mecanico m ON u.dni = m.dni
+	WHERE u.dni = @dni AND c.dni IS NULL AND m.dni IS NULL;
+END*/
+
+--	****************************************************** CONSULTAS ******************************************************************
+-- listar todos los datos de las tablas
+select * from usuario;
+select * from cliente;
+
+-- listar los mecanicos
+/*select 
+	u.dni,
+	u.nombre,
+	u.apellido,
+	u.contrasena,
+	u.correo,
+	u.telefono,
+	m.fechaIngreso,
+	m.sueldo
+from mecanico m
+left join usuario u on m.dni = u.dni
+order by m.sueldo desc;*/
+
+-- listar los clientes
+select
+	u.dni,
+	u.nombre,
+	u.apellido,
+	u.contrasena,
+	u.correo,
+	u.telefono,
+	c.fechaIngreso,
+	c.domicilio,
+	c.RegimenLaboral
+from cliente c
+left join usuario u on c.dni = u.dni
+order by u.nombre;
+
+-- listar un cliente en especifico
+SELECT u.dni, u.nombre, u.apellido, c.domicilio
+FROM cliente c
+LEFT JOIN usuario u ON c.dni = u.dni
+WHERE c.dni = 234567890;
+
+-- Listar todos los usuarios que no son ni clientes ni mecanicos
+/*SELECT
+	u.dni,
+	u.nombre,
+	u.apellido,
+	u.contrasena,
+	u.correo,
+	u.telefono
+FROM usuario u
+LEFT JOIN cliente c ON u.dni = c.dni
+LEFT JOIN mecanico m ON u.dni = m.dni
+WHERE c.dni IS NULL AND m.dni IS NULL;*/
+
+-- Buscar usuario que no es ni cliente ni mecanico
+/*SELECT
+	u.dni,
+	u.nombre,
+	u.apellido,
+	u.contrasena,
+	u.correo,
+	u.telefono
+FROM usuario u
+LEFT JOIN cliente c ON u.dni = c.dni
+LEFT JOIN mecanico m ON u.dni = m.dni
+WHERE u.dni = 31415926 AND c.dni IS NULL AND m.dni IS NULL;*/
+
+-- ******************************************** PRUEBA DE ELIMINACION DE DATOS **************************************************
+--DELETE FROM cliente WHERE dni = 44745058;
+
+
+-- ******************************************** ELIMINACION DE TABLAS y PROCEDIMIENTOS ****************************************************
+/*DROP TABLE IF EXISTS administrador;
+DROP TABLE IF EXISTS cliente;
+DROP TABLE IF EXISTS usuario;*/
+
+/*DROP PROCEDURE dbo.actualizar_administrador;
+DROP PROCEDURE dbo.actualizar_cliente;
+DROP PROCEDURE dbo.agregar_administrador;
+DROP PROCEDURE dbo.agregar_cliente;
+DROP PROCEDURE dbo.buscar_administrador;
+DROP PROCEDURE dbo.buscar_cliente;
+DROP PROCEDURE dbo.buscar_usuario;
+DROP PROCEDURE dbo.listar_administradores;
+DROP PROCEDURE dbo.listar_clientes;
+DROP PROCEDURE dbo.listar_usuarios;*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- UPDATE usuario SET contrasena = @n_contrasena, telefono = @n_telefono WHERE id_usuario = @n_id_usuario
+
+
+
+/*
 -- Sedders
-
 -- Insertar en usuario
 INSERT INTO usuario (nombre, apellido, contrasena, correo, telefono) VALUES
 ('Juan', 'Perez', 'password123', 'juan.perez@mail.com', '316261626'),
 ('Diego', 'Gomez', 'password246', 'diego.gomez@mail.com', '342233223'),
 ('Esteban', 'Aquino', 'password369', 'esteban.aquino@mail.com', '23442233');
-
--- SELECT * FROM usuario;
 
 -- Insertar en cliente
 INSERT INTO cliente (domicilio, tipoRegimenLaboral, id_usuario) VALUES
@@ -108,59 +451,154 @@ INSERT INTO turno (id_cliente, id_vehiculo, id_servicio, fecha, costo_total, est
 (1, 1, 1, '2024-10-28', 50.00, 1),
 (2, 2, 2, '2024-10-29', 100.00, 1),
 (1, 3, 3, '2024-10-30', 200.00, 1);
+*/
 
-CREATE PROCEDURE agregar_usuario
-    @n_nombre VARCHAR(45),
-    @n_apellido VARCHAR(45),
-    @n_contrasena VARCHAR(100),
-    @n_correo VARCHAR(100),
-    @n_telefono VARCHAR(100)
+-- *********************************************************** CREACION DE PROCEDIMIENTOS ALMACENADOS ***********************************************************
+
+/*CREATE PROCEDURE agregar_cliente
+	@domicilio VARCHAR(100),
+	@tipoRegimenLaboral VARCHAR(100),
+	@id_usuario INT
 AS
 BEGIN
-    INSERT INTO usuario (nombre, apellido, contrasena, correo, telefono)
-    VALUES (@n_nombre, @n_apellido, @n_contrasena, @n_correo, @n_telefono)
-END
+	INSERT INTO cliente(domicilio, tipoRegimenLaboral, id_usuario)
+	VALUES(@domicilio, @tipoRegimenLaboral, @id_usuario)	
+END*/
 
-CREATE PROCEDURE actualizar_usuario
+/*CREATE PROCEDURE agregar_administrador
+	@area_trabajo VARCHAR(100),
+	@estado VARCHAR(100),
+	@id_usuario INT
+AS
+BEGIN
+	INSERT INTO administrador(area_trabajo, estado, id_usuario)
+	VALUES(@area_trabajo, @estado, @id_usuario)
+END*/
+
+/*CREATE PROCEDURE actualizar_usuario_cliente
 	@n_id_usuario INT,
 	@n_contrasena VARCHAR(100),
 	@n_telefono VARCHAR(100)
 AS
 BEGIN
 	UPDATE usuario SET contrasena = @n_contrasena, telefono = @n_telefono WHERE id_usuario = @n_id_usuario
-END
+END*/
 
--- Consultas
-SELECT * FROM usuario;
-SELECT * FROM cliente;
-SELECT * FROM administrador;
-SELECT * FROM vehiculo;
-SELECT * FROM servicio;
-SELECT * FROM turno;
 
-/*
-DROP TABLE IF EXISTS turno;
-DROP TABLE IF EXISTS servicio;
-DROP TABLE IF EXISTS vehiculo;
-DROP TABLE IF EXISTS administrador;
-DROP TABLE IF EXISTS cliente;
-DROP TABLE IF EXISTS usuario;
-*/
+/*CREATE PROCEDURE listar_clientes
+AS
+BEGIN
+	SELECT 
+		u.nombre,
+		u.apellido, 
+		u.correo, 
+		u.telefono,
+		c.domicilio,
+		c.tipoRegimenLaboral
+	FROM cliente c
+	LEFT JOIN usuario u ON c.id_usuario = u.id_usuario
+	ORDER BY u.nombre;
+END*/
 
--- listar los clientes
-SELECT c.id_cliente AS id_cliente, u.nombre AS nombre, u.telefono AS telefono, c.domicilio AS domicilio, c.tipoRegimenLaboral AS regimen
-FROM cliente c
-LEFT JOIN usuario u ON u.id_usuario = c.id_usuario
-ORDER BY u.nombre;
+/*CREATE PROCEDURE listar_administrador
+AS
+BEGIN
+	-- Datos que queremos mostrar
+	SELECT 
+		u.nombre,
+		u.apellido, 
+		u.correo, 
+		u.telefono,
+		a.area_trabajo,
+		a.estado
+	FROM administrador a
+	LEFT JOIN usuario u ON a.id_administrador = u.id_usuario
+	ORDER BY a.estado;
+END*/
 
--- listar los administradores
-SELECT a.id_administrador AS id_admin, u.nombre AS nombre, u.correo AS correo, a.area_trabajo AS area, a.estado AS estado
-FROM administrador a
-LEFT JOIN usuario u ON a.id_usuario = u.id_usuario
-ORDER BY u.nombre;
+/*CREATE PROCEDURE listar_turno
+AS
+BEGIN
+    SELECT 
+		-- datos de turno
+        t.id_turno,
+		t.fecha, 
+		t.costo_total, 
+		t.estado,
+		-- datos de cliente
+        c.id_cliente,
+		-- datos de usuario
+        u.nombre, 
+		u.apellido,
+		-- datos de vehiculo
+        v.id_vehiculo, 
+		v.marca, 
+		v.modelo,
+		-- datos de servicio
+        s.id_servicio, 
+		s.nombre AS nombre_servicio
+    FROM turno t
+    INNER JOIN cliente c ON t.id_cliente = c.id_cliente
+    INNER JOIN usuario u ON c.id_usuario = u.id_usuario
+    INNER JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
+    INNER JOIN servicio s ON t.id_servicio = s.id_servicio
+    ORDER BY t.fecha DESC
+END*/
 
+/*CREATE PROCEDURE mostrar_turno_de_cliente
+	@n_id_cliente INT
+AS
+BEGIN
+	SELECT 
+		c.id_cliente AS 'ID_CLIENTE',
+		u.nombre AS 'NOMBRE',
+		t.fecha AS 'FECHA_TURNO',
+		v.marca AS 'MARCA',
+		v.modelo AS 'MODELO',
+		s.nombre AS 'SERVICIO_SOLICITADO',
+		s.costo AS 'PRECIO'
+	FROM turno t
+	LEFT JOIN cliente c ON c.id_cliente = t.id_cliente
+	LEFT JOIN usuario u ON c.id_usuario = u.id_usuario
+	LEFT JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
+	LEFT JOIN servicio s ON t.id_servicio = s.id_servicio
+	WHERE c.id_cliente =  @n_id_cliente
+	ORDER BY s.costo DESC;
+END*/
+
+/*CREATE PROCEDURE buscar_cliente
+	@n_id_cliente INT
+AS
+BEGIN
+	SELECT 
+		-- Datos que queremos extraer
+		u.id_usuario,
+		c.id_cliente,
+		u.nombre,
+		u.correo,
+		c.domicilio,
+		c.tipoRegimenLaboral
+	FROM cliente c
+	LEFT JOIN usuario u ON c.id_usuario = u.id_usuario
+	WHERE c.id_cliente = @n_id_cliente
+END*/
+
+
+
+/*CREATE PROCEDURE eliminar_cliente
+    @id_usuario INT
+AS
+BEGIN
+    DELETE FROM cliente WHERE id_usuario = @id_usuario;
+    DELETE FROM usuario WHERE id_usuario = @id_usuario;
+END;*/
+
+
+-- *********************************************************************************************************************************************************
+
+-- CONSULTAS AVANZADAS
 -- Listar todos los turnos
-SELECT 
+/*SELECT 
 	c.id_cliente AS id_cliente,
 	CONCAT(u.nombre, ' ', u.apellido) AS nombre_completo,
 	s.nombre AS servicio,
@@ -173,10 +611,10 @@ LEFT JOIN usuario u ON c.id_usuario = u.id_usuario
 LEFT JOIN turno t ON c.id_cliente = t.id_cliente
 LEFT JOIN servicio s ON t.id_servicio = s.id_servicio
 LEFT JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
-ORDER BY s.costo DESC;
+ORDER BY s.costo DESC;*/
 
 -- Ver cuántos turnos tiene cada cliente:
-SELECT 
+/*SELECT 
     c.id_cliente AS id_cliente,
     CONCAT(u.nombre, ' ', u.apellido) AS nombre_completo,
     COUNT(t.id_turno) AS cantidad_turnos
@@ -187,10 +625,10 @@ GROUP BY
     c.id_cliente, 
     u.nombre,
     u.apellido
-ORDER BY c.id_cliente;
+ORDER BY c.id_cliente;*/
 
 -- ver los turnos de un cliente en especifico
-SELECT 
+/*SELECT 
 	t.id_turno AS 'ID TURNO',
 	CONCAT(u.nombre, ' ', u.apellido) AS 'NOMBRE COMPLETO',
 	v.marca AS 'VEHICULO',
@@ -204,5 +642,76 @@ LEFT JOIN turno t ON c.id_cliente = t.id_cliente
 LEFT JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
 LEFT JOIN servicio s ON t.id_servicio = s.id_servicio
 WHERE c.id_cliente = 1
-ORDER BY t.costo_total DESC;
+ORDER BY t.costo_total DESC;*/
+
+
+
+-- listar turnos de un cliente en especifico
+/*SELECT 
+	c.id_cliente AS 'ID_CLIENTE',
+	u.nombre AS 'NOMBRE',
+	t.fecha AS 'FECHA_TURNO',
+	CONCAT(v.marca, ' ', v.modelo) AS 'VEHICULO',
+	s.nombre AS 'SERVICIO_SOLICITADO',
+	s.costo AS 'PRECIO'
+FROM turno t
+LEFT JOIN cliente c ON c.id_cliente = t.id_cliente
+LEFT JOIN usuario u ON c.id_usuario = u.id_usuario
+LEFT JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
+LEFT JOIN servicio s ON t.id_servicio = s.id_servicio
+WHERE c.id_cliente = 1
+ORDER BY s.costo DESC;*/
+
+
+
+/*SELECT u.id_usuario, u.nombre, u.apellido, u.correo, u.telefono
+FROM usuario u
+LEFT JOIN cliente c ON u.id_usuario = c.id_usuario
+LEFT JOIN administrador a ON u.id_usuario = a.id_usuario
+WHERE c.id_cliente IS NULL 
+AND a.id_administrador IS NULL;*/
+
+--select * from cliente;
+--select * from usuario;
+
+-- listar los clientes
+/*SELECT u.id_usuario AS id_usuario, c.id_cliente AS id_cliente, u.nombre AS nombre, u.telefono AS telefono, c.domicilio AS domicilio, c.tipoRegimenLaboral AS regimen
+FROM cliente c
+LEFT JOIN usuario u ON u.id_usuario = c.id_usuario*/
+
+-- listar los administradores
+/*SELECT u.id_usuario AS id_usuario, a.id_administrador AS id_admin, u.nombre AS nombre, u.correo AS correo, a.area_trabajo AS area, a.estado AS estado
+FROM administrador a
+LEFT JOIN usuario u ON a.id_usuario = u.id_usuario*/
+
+/*INSERT INTO usuario(nombre, apellido, contrasena, correo, telefono) 
+VALUES('Valentina', 'Gomez', 'micontra2016', 'micorreo2016@gmail.com', '123456')
+INSERT INTO administrador(area_trabajo, estado, id_usuario)
+VALUES('Director', 'NO ACTIVO', 12)*/
+
+/*SELECT * FROM usuario;
+SELECT * FROM cliente;
+SELECT * FROM administrador;
+SELECT * FROM servicio;
+SELECT * FROM vehiculo;
+SELECT * FROM turno;*/
+
+-- ELIMINACION DE TABLAS
+/*DROP TABLE IF EXISTS turno;
+DROP TABLE IF EXISTS servicio;
+DROP TABLE IF EXISTS vehiculo;
+DROP TABLE IF EXISTS administrador;
+DROP TABLE IF EXISTS cliente;
+DROP TABLE IF EXISTS usuario;*/
+
+-- ELIMINACION DE PROCEDIMIENTOS ALMACENADOS
+/*DROP PROCEDURE IF EXISTS dbo.actualizar_usuario_cliente;
+DROP PROCEDURE IF EXISTS dbo.agregar_administrador;
+DROP PROCEDURE IF EXISTS dbo.agregar_cliente;
+DROP PROCEDURE IF EXISTS dbo.buscar_cliente;
+DROP PROCEDURE IF EXISTS dbo.eliminar_cliente;
+DROP PROCEDURE IF EXISTS dbo.listar_administrador;
+DROP PROCEDURE IF EXISTS dbo.listar_clientes;
+DROP PROCEDURE IF EXISTS dbo.listar_turno;
+DROP PROCEDURE IF EXISTS dbo.mostrar_turno_de_cliente;*/
 

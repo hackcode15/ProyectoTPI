@@ -8,9 +8,44 @@ import java.util.*;
 
 public class UsuarioDAO extends OperacionesCrudAdaptadora<Usuario> {
 
-    @Override
-    public List<Usuario> read(){
+    // METODO ESPECIFICO
+    // Metodo para verificar las credenciales
+    public boolean verificarCredenciales(int dni, String contrasena) {
         
+        String sql = "SELECT 1 FROM usuario WHERE dni = ? AND contrasena = ?";
+        
+        try (Connection miConexion = ConectorBD.dameConexion(); PreparedStatement miSentencia = miConexion.prepareStatement(sql)) {
+            
+            miSentencia.setInt(1, dni);
+            miSentencia.setString(2, contrasena);
+            
+            try (ResultSet rs = miSentencia.executeQuery()) {
+
+                /*if(rs.next()){
+                    return true;
+                }else{
+                    return false;
+                }*/
+                return rs.next(); // true o false
+                
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+        
+    }
+    
+    // C.R.U.D
+    // Create
+    // Read
+    // Update
+    // Delete
+    
+    @Override
+    public List<Usuario> read() {
+
         /*CREATE PROCEDURE listar_usuarios
         AS
         BEGIN
@@ -26,16 +61,15 @@ public class UsuarioDAO extends OperacionesCrudAdaptadora<Usuario> {
             LEFT JOIN mecanico m ON u.dni = m.dni
             WHERE c.dni IS NULL AND m.dni IS NULL;
         END*/
-        
         String sql = "{CALL listar_usuarios}";
         
-        try(Connection miConexion = ConectorBD.dameConexion();
-                CallableStatement miSentencia = miConexion.prepareCall(sql);
-                ResultSet rs = miSentencia.executeQuery()){
+        try (Connection miConexion = ConectorBD.dameConexion(); 
+                CallableStatement miSentencia = miConexion.prepareCall(sql); 
+                ResultSet rs = miSentencia.executeQuery()) {
             
             List<Usuario> lista = new ArrayList<>();
             
-            while(rs.next()){
+            while (rs.next()) {
                 
                 Usuario usuario = Usuario.builder()
                         .dni(rs.getInt("dni"))
@@ -52,7 +86,7 @@ public class UsuarioDAO extends OperacionesCrudAdaptadora<Usuario> {
             
             return lista;
             
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
             return null;
         }
@@ -60,90 +94,73 @@ public class UsuarioDAO extends OperacionesCrudAdaptadora<Usuario> {
     }
     
     @Override
-    public boolean delete(Usuario usuario){
+    public boolean delete(Usuario usuario) {
         
         String sql = "DELETE FROM usuario WHERE dni = ?";
-
-        try(Connection miConexion = ConectorBD.dameConexion()){
+        
+        try (Connection miConexion = ConectorBD.dameConexion()) {
             
             miConexion.setAutoCommit(false);
             
-            try(PreparedStatement miSentencia = miConexion.prepareStatement(sql)){
+            try (PreparedStatement miSentencia = miConexion.prepareStatement(sql)) {
                 
                 miSentencia.setInt(1, usuario.getDni());
                 
                 int filasAfectadas = miSentencia.executeUpdate();
                 
-                if(filasAfectadas == 0){
+                if (filasAfectadas == 0) {
                     throw new SQLException("Error en eliminar usuario, ninguna fila afectada");
                 }
                 
-            }catch(SQLException e){
+            } catch (SQLException e) {
                 miConexion.rollback();
                 System.out.println("Error al eliminar usuario, se revertio la transaccion");
-            }finally{
+            } finally {
                 miConexion.setAutoCommit(true);
             }
             
             miConexion.commit();
             return true;
             
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
             return false;
         }
-
+        
     }
     
     @Override
-    public Usuario searchByDni(int dni){
+    public Usuario searchByDni(int dni) {
+
+        String sql = "SELECT * FROM usuario WHERE dni = ?";
         
-        /*CREATE PROCEDURE buscar_usuario
-            @dni BIGINT
-        AS
-        BEGIN
-            SELECT
-                u.dni,
-                u.nombre,
-                u.apellido,
-                u.contrasena,
-                u.correo,
-                u.telefono
-            FROM usuario u
-            LEFT JOIN cliente c ON u.dni = c.dni
-            LEFT JOIN mecanico m ON u.dni = m.dni
-            WHERE u.dni = @dni AND c.dni IS NULL AND m.dni IS NULL;
-        END*/
-        
-        String sql = "{CALL buscar_usuario(?)}";
-        
-        try(Connection miConexion = ConectorBD.dameConexion();
-                CallableStatement miSentencia = miConexion.prepareCall(sql)){
+        try (Connection miConexion = ConectorBD.dameConexion(); PreparedStatement miSentencia = miConexion.prepareStatement(sql)) {
             
             miSentencia.setInt(1, dni);
             
-            try(ResultSet rs = miSentencia.executeQuery()){
+            try (ResultSet rs = miSentencia.executeQuery()) {
                 
-                if(rs.next()){
+                if (rs.next()) {
                     
                     Usuario usuario = Usuario.builder()
-                        .dni(rs.getInt("dni"))
-                        .nombre(rs.getString("nombre"))
-                        .apellido(rs.getString("apellido"))
-                        .contrasena(rs.getString("contrasena"))
-                        .correo(rs.getString("correo"))
-                        .telefono(rs.getString("telefono"))
-                        .build();
+                            .dni(rs.getInt("dni"))
+                            .nombre(rs.getString("nombre"))
+                            .apellido(rs.getString("apellido"))
+                            .contrasena(rs.getString("contrasena"))
+                            .correo(rs.getString("correo"))
+                            .telefono(rs.getString("telefono"))
+                            .rol(rs.getString("rol"))
+                            .build();
                     
                     return usuario;
                     
-                }else{
+                } else {
                     return null;
                 }
                 
             }
             
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
             return null;
         }

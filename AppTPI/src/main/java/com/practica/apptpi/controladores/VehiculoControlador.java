@@ -1,44 +1,32 @@
-/*package com.practica.apptpi.controladores;
+package com.practica.apptpi.controladores;
 
 import com.practica.apptpi.dao.VehiculoDAO;
 import com.practica.apptpi.entidades.Vehiculo;
 import java.util.*;
 
-public class VehiculoControlador {
+public class VehiculoControlador { 
 
+    // instaciar el DAO de vehiculo
     private VehiculoDAO vehiculoDAO;
     
     public VehiculoControlador(){
-        vehiculoDAO = new VehiculoDAO();
+        this.vehiculoDAO = new VehiculoDAO();
     }
     
-    // uso del metodo - read
+    // metodos crud
     public void listarVehiculos(){
         
         List<Vehiculo> listaVehiculos = vehiculoDAO.read();
         
-        System.out.printf(
-                "%-16s %-16s %-16s %-16s %-16s %-16s%n",
-                "ID_VEHICULO",
-                "MARCA",
-                "MODELO",
-                "AÑO",
-                "PRECIO",
-                "ESTADO");
+        // forma de basico de imprimir
+        for (int i = 0; i < listaVehiculos.size(); i++) {
+            System.out.println(listaVehiculos.get(i));
+        }
         
-        listaVehiculos.stream()
-                .map(p -> String.format(
-                        "%-16s %-16s %-16s %-16s %-16s %-16s",
-                        p.getId_vehiculo(),
-                        p.getMarca(),
-                        p.getModelo(),
-                        p.getAnio(),
-                        p.getPrecio(),
-                        p.getEstado()))
-                .forEach(System.out::println);
-        
-        System.out.println("");
+        for (Vehiculo vehiculo : listaVehiculos) {
+            System.out.println(vehiculo);
+        }
         
     }
     
-}*/
+}
