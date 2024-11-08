@@ -1,6 +1,6 @@
 package com.practica.apptpi.dao;
 
-public class TurnoDAO {
+public class TurnoServicioDAO {
     
     
     

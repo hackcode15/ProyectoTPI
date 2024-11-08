@@ -1,8 +1,8 @@
 package com.practica.apptpi.controladores;
 
 import com.practica.apptpi.dao.ClienteDAO;
-import com.practica.apptpi.entidades.Cliente;
-import com.practica.apptpi.entidades.Usuario;
+import com.practica.apptpi.modelo.Cliente;
+import com.practica.apptpi.modelo.Usuario;
 import java.util.*;
 
 // TERMINADO
@@ -10,14 +10,24 @@ public class ClienteControlador {
 
     private ClienteDAO clienteDAO;
     private Scanner sc;
-    private Usuario usuarioActual;
 
-    public ClienteControlador(Usuario usuarioActual) {
-        this.usuarioActual = usuarioActual;
+    public ClienteControlador() {
         clienteDAO = new ClienteDAO();
         sc = new Scanner(System.in);
     }
 
+    /*
+    PERMISOS DE CLIENTES
+    registrarse
+    ver los datos de su cuenta
+    modificar los datos de su cuenta
+    eliminar su propia cuenta
+     */
+ /*
+    PERMISOS DE MECANICO
+    ver la lista completa de clientes (con restrincion de datos personales)
+    buscar un cliente en especifico y ver sus datos (con restrincion de datos personales)
+     */
     // usu del metodo: create
     public void registrarseComoCliente() {
 
@@ -69,8 +79,8 @@ public class ClienteControlador {
     }
 
     // uso del metodo: read
-    // SOLO LOS MECANICOS PUEDEN VER LA LISTA DE CLIENTES
-    public void listarClientes() {
+    // SOLO LOS MECANICOS PUEDEN VER LA LISTA COMPLETA DE CLIENTES
+    public void listarClientes(Usuario usuarioActual) {
 
         if (usuarioActual.getRol().equalsIgnoreCase("Mecanico")) {
 
@@ -92,7 +102,7 @@ public class ClienteControlador {
             // expresiones lambda
             listaClientes.stream().
                     map(p -> String.format(
-                    "%-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
+                    "%-16s %-16s %-30s %-16s %-16s %-30s %-16s",
                     p.getNombre(),
                     p.getApellido(),
                     p.getCorreo(),
@@ -112,7 +122,9 @@ public class ClienteControlador {
 
     // usu del metodo: update
     // Un mecanico no puede tener acceso a este metodo
-    public void modificarMisDatos() {
+    // SOLO LOS CLIENTES PUEDEN MODIFICAR SUS DATOS
+    // EL CLIENTE ACTUAL LOGUEADO SOLO PUEDE MODIFICAR SU CUENTA
+    public void modificarMisDatos(Usuario usuarioActual) {
 
         // Manejo de error
         if (!usuarioActual.getRol().equalsIgnoreCase("Cliente")) {
@@ -122,24 +134,21 @@ public class ClienteControlador {
 
         System.out.println("== ACTUALIZA TUS DATOS ==");
 
-        System.out.print("Digite su DNI: ");
-        int dni = sc.nextInt();
-
+        /*System.out.print("Digite su DNI: ");
+        int dni = sc.nextInt();*/
         // Manejo de error
-        if (dni != usuarioActual.getDni()) {
+        /*if (dni != usuarioActual.getDni()) {
             System.out.println("No puedes modificar datos de otro cliente");
             return;
-        }
-
-        sc.nextLine();
-
-        Cliente cliente = clienteDAO.searchByDni(dni);
-
+        }*/
+        //sc.nextLine();
+        //Cliente cliente = clienteDAO.searchByDni(dni);
         // Manejo de error
-        if (cliente == null) {
+        /*if (cliente == null) {
             System.out.println("Error: el cliente no existe");
             return;
-        }
+        }*/
+        Cliente cliente = clienteDAO.searchByDni(usuarioActual.getDni());
 
         System.out.println("Hola \"" + cliente.getNombre() + "\", estas por actualizar tus datos");
 
@@ -168,27 +177,16 @@ public class ClienteControlador {
 
     // usu del metodo: delete
     // NO TIENEN ACCESO LOS MECANICOS A ESTE METODO
-    public void eliminarMiCuenta() {
+    // SOLO LOS CLIENTES PUEDEN ELIMINAR SU CUENTA
+    // EL CLIENTE ACTUAL LOGUEADO SOLO PUEDE ELIMINAR SU CUENTA
+    public void eliminarMiCuenta(Usuario usuarioActual) {
 
         if (!usuarioActual.getRol().equalsIgnoreCase("Cliente")) {
             System.out.println("Error: no tienes acceso");
             return;
         }
 
-        System.out.println("== ELIMINAR TU CUENTA ==");
-
-        System.out.print("Digita tu DNI: ");
-        int dni = sc.nextInt();
-
-        Cliente cliente = clienteDAO.searchByDni(dni);
-
-        // Manejo de posibles errores
-        if (cliente == null) {
-            System.out.println("Error: el cliente no existe");
-        }
-        if (dni != usuarioActual.getDni()) {
-            System.out.println("Error: no puedes eliminar a otro cliente");
-        }
+        Cliente cliente = clienteDAO.searchByDni(usuarioActual.getDni());
 
         if (clienteDAO.delete(cliente)) {
             System.out.println("Cliente \"" + cliente.getNombre() + "\" has eliminado tu cuenta correctamente");
@@ -197,24 +195,32 @@ public class ClienteControlador {
     }
 
     // usu del metodo: searchByDni
-    // distintos casos para diferentes roles
-    public void verDatos() {
-
-        System.out.println("== OBTENER INFORMACION DEL CLIENTE ==");
-        System.out.print("Digite su DNI: ");
-        int dni = sc.nextInt();
-
-        Cliente cliente = clienteDAO.searchByDni(dni);
-
-        if (cliente == null) {
-            System.out.println("Error: el cliente no existe");
-            return;
-        }
+    // TANTO LOS CLIENTES COMO LOS MECANICOS TIENEN ACCESO A ESTE METODO
+    // CON RESTRINCIONES DE DATOS, DEPENDIENDO EL ROL DEL USUARIO LOGUEADO
+    public void verDatos(Usuario usuarioActual) {
 
         if (usuarioActual.getRol().equalsIgnoreCase("Mecanico")) {
+
+            System.out.println("== OBTENER INFORMACION DEL CLIENTE ==");
+            System.out.print("Digite su DNI: ");
+            int dni = sc.nextInt();
+
+            Cliente cliente = clienteDAO.searchByDni(dni);
+
+            if (cliente == null) {
+                System.out.println("Error: el cliente no existe");
+                return;
+            }
+
             dameDatosResumidos(cliente);
         } else if (usuarioActual.getRol().equalsIgnoreCase("Cliente")) {
+
+            System.out.println("== INFORMACION DE TU CUENTA ==");
+
+            Cliente cliente = clienteDAO.searchByDni(usuarioActual.getDni());
+
             dameDatosCompletos(cliente);
+
         }
 
     }
@@ -235,7 +241,7 @@ public class ClienteControlador {
                 "REGIMEN");
 
         System.out.printf(
-                "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
+                "%-16s %-16s %-16s %-16s %-30s %-16s %-30s %-16s",
                 cliente.getDni(),
                 cliente.getNombre(),
                 cliente.getApellido(),
@@ -264,7 +270,7 @@ public class ClienteControlador {
                 "REGIMEN");
 
         System.out.printf(
-                "%-16s %-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
+                "%-16s %-16s %-16s %-30s %-16s %-16s %-30s %-16s",
                 cliente.getDni(),
                 cliente.getNombre(),
                 cliente.getApellido(),

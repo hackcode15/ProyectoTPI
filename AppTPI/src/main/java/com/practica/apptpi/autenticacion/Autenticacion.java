@@ -1,7 +1,7 @@
 package com.practica.apptpi.autenticacion;
 
 import com.practica.apptpi.dao.UsuarioDAO;
-import com.practica.apptpi.entidades.Usuario;
+import com.practica.apptpi.modelo.Usuario;
 
 // TERMINADO
 public class Autenticacion {

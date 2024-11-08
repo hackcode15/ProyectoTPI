@@ -2,7 +2,7 @@ package com.practica.apptpi.dao;
 
 import com.practica.apptpi.conexionBD.ConectorBD;
 import com.practica.apptpi.crud.OperacionesCrudAdaptadora;
-import com.practica.apptpi.entidades.Usuario;
+import com.practica.apptpi.modelo.Usuario;
 import java.sql.*;
 import java.util.*;
 

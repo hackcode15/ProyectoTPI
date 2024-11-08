@@ -2,7 +2,7 @@ package com.practica.apptpi.dao;
 
 import com.practica.apptpi.conexionBD.ConectorBD;
 import com.practica.apptpi.crud.OperacionesCrud;
-import com.practica.apptpi.entidades.Mecanico;
+import com.practica.apptpi.modelo.Mecanico;
 import java.sql.*;
 import java.util.*;
 

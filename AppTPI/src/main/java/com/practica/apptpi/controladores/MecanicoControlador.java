@@ -1,7 +1,7 @@
 package com.practica.apptpi.controladores;
 
 import com.practica.apptpi.dao.MecanicoDAO;
-import com.practica.apptpi.entidades.Mecanico;
+import com.practica.apptpi.modelo.Mecanico;
 import java.util.*;
 
 public class MecanicoControlador {

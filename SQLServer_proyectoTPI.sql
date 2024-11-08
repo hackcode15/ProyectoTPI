@@ -1,14 +1,14 @@
 -- ******************************* CREACION DE LA BASE DE DATOS *************************************
+-- 1 ejecucion
 -- CREATE DATABASE proyectoBD;
 
 -- ******************************* USO DE LA BASE DE DATOS ********************************************
+-- 2 ejecucion
 USE proyectoBD;
 
 -- ******************************** CREACIONES DE TABLAS******************************************************
 
-SELECT 1 FROM usuario WHERE dni = 46924236 AND contrasena = 'micontra123';
-
-
+-- 3 ejecucion
 /*CREATE TABLE usuario (
 	dni BIGINT NOT NULL,
     nombre VARCHAR(45) NOT NULL,
@@ -19,6 +19,7 @@ SELECT 1 FROM usuario WHERE dni = 46924236 AND contrasena = 'micontra123';
     PRIMARY KEY(dni)
 );*/
 
+-- 4 ejecucion
 /*CREATE TABLE cliente (
 	dni BIGINT NOT NULL,
 	fechaIngreso DATETIME DEFAULT GETDATE(),
@@ -28,6 +29,7 @@ SELECT 1 FROM usuario WHERE dni = 46924236 AND contrasena = 'micontra123';
     CONSTRAINT fk_cliente FOREIGN KEY(dni) REFERENCES usuario(dni) ON DELETE CASCADE
 );*/
 
+-- 5 ejecucion
 /*CREATE TABLE mecanico (
 	dni BIGINT NOT NULL,
 	fechaIngreso DATETIME DEFAULT GETDATE(),
@@ -36,39 +38,169 @@ SELECT 1 FROM usuario WHERE dni = 46924236 AND contrasena = 'micontra123';
     CONSTRAINT fk_administrador FOREIGN KEY(dni) REFERENCES usuario(dni) ON DELETE CASCADE
 );*/
 
+-- 6 ejecucion
 /*CREATE TABLE vehiculo (
-	dni INT,
-	id_vehiculo INT NOT NULL IDENTITY(1,1),
+    id_vehiculo INT IDENTITY(1,1),
     marca VARCHAR(45) NOT NULL,
     modelo VARCHAR(45) NOT NULL,
     anio INT NOT NULL,
-    precio DECIMAL(10, 2) NOT NULL,
-    estado VARCHAR(45) DEFAULT 'DISPONIBLE',
-    PRIMARY KEY(id_vehiculo),
-	CONSTRAINT fk_cliente_vehiculo FOREIGN KEY(dni) REFERENCES cliente(dni) ON DELETE CASCADE
+    dni_cliente BIGINT NOT NULL,
+	PRIMARY KEY(id_vehiculo),
+    CONSTRAINT fk_vehiculo_cliente FOREIGN KEY (dni_cliente) REFERENCES cliente(dni)
 );*/
 
+-- 7 ejecucion
 /*CREATE TABLE servicio (
-	id_servicio INT NOT NULL IDENTITY(1,1),
-	nombre VARCHAR(45) NOT NULL,
-	costo FLOAT NOT NULL,
-	estado VARCHAR(45) DEFAULT 'DISPONIBLE',
+    id_servicio INT IDENTITY(1,1),
+    nombre VARCHAR(45) NOT NULL,
+    costo DECIMAL(10, 2) NOT NULL,
+    estado VARCHAR(45) DEFAULT 'DISPONIBLE',
 	PRIMARY KEY(id_servicio)
 );*/
 
+-- 8 ejecucion
 /*CREATE TABLE turno (
-	id_turno INT NOT NULL IDENTITY(1,1),
-	dni BIGINT NOT NULL,
-	id_vehiculo INT NOT NULL,
-	id_servicio INT NOT NULL,
-	fecha DATE DEFAULT GETDATE() NOT NULL,
-	costo_total DECIMAL(10,2) NOT NULL,
-	estado BIT NOT NULL,
-	PRIMARY KEY(id_turno),
-	CONSTRAINT fk_turno_cliente FOREIGN KEY(dni) REFERENCES cliente(dni),
-	CONSTRAINT fk_turno_vehiculo FOREIGN KEY(id_vehiculo) REFERENCES vehiculo(id_vehiculo),
-	CONSTRAINT fk_turno_servicio FOREIGN KEY(id_servicio) REFERENCES servicio(id_servicio)
+    id_turno INT IDENTITY(1,1),
+    fecha DATE DEFAULT GETDATE() NOT NULL,
+    id_vehiculo INT NOT NULL,
+    dni_cliente BIGINT NOT NULL,
+    PRIMARY KEY(id_turno),
+    CONSTRAINT fk_turno_vehiculo FOREIGN KEY (id_vehiculo) REFERENCES vehiculo(id_vehiculo),
+    CONSTRAINT fk_turno_cliente FOREIGN KEY (dni_cliente) REFERENCES cliente(dni),
 );*/
+
+-- 9 ejecucion
+/*CREATE TABLE turno_servicio (
+    id_turno INT NOT NULL,
+    id_servicio INT NOT NULL,
+    PRIMARY KEY (id_turno, id_servicio),
+    CONSTRAINT fk_turnoservicio_turno FOREIGN KEY (id_turno) REFERENCES turno(id_turno),
+    CONSTRAINT fk_turnoservicio_servicio FOREIGN KEY (id_servicio) REFERENCES servicio(id_servicio)
+);*/
+
+-- Insertar en la tabla vehiculo
+/*INSERT INTO vehiculo(marca, modelo, anio, dni_cliente)
+VALUES
+('Toyota', 'Hilux', 2024, 12345678),
+('Toyota', 'Corolla', 2022, 12345678),
+('Ford', 'Ranger', 2018, 31415926);*/
+
+-- Insertar en la tabla servicio
+/*INSERT INTO servicio(nombre, costo)
+VALUES
+('Cambio de Aceite', 15000),
+('Servi Completo', 60000),
+('Alineacion y Balanceo', 40000),
+('Revision General', 25000);*/
+
+-- Insertar en la tabla turno
+/*INSERT INTO turno(id_vehiculo, dni_cliente)
+VALUES
+(1, 12345678),
+(2, 12345678),
+(3, 31415926);*/
+
+-- Insertar en la tabla turno_servicio
+/*INSERT INTO turno_servicio(id_turno, id_servicio)
+VALUES
+(1, 1),  -- Asocia el turno 1 con el servicio 1
+(1, 3),  -- Asocia el turno 1 con el servicio 3
+(2, 2),  -- Asocia el turno 2 con el servicio 2
+(3, 4);  -- Asocia el turno 3 con el servicio 4*/
+
+-- ver los vehiculos de los clientes
+select c.dni, u.nombre, v.marca, v.modelo, v.anio from vehiculo v
+left join cliente c on v.dni_cliente = c.dni
+left join usuario u on c.dni = u.dni
+where u.dni = 31415926;
+
+-- Obtener Información Básica de Turnos
+/*SELECT t.id_turno, t.fecha, v.marca, v.modelo, v.anio, u.nombre, u.apellido
+FROM turno t
+JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
+JOIN cliente c ON t.dni_cliente = c.dni
+JOIN usuario u ON c.dni = u.dni;*/
+
+-- Obtener Servicios Asociados a Cada Turno
+/*SELECT t.id_turno, t.fecha, s.nombre AS servicio, s.costo
+FROM turno t
+JOIN turno_servicio ts ON t.id_turno = ts.id_turno
+JOIN servicio s ON ts.id_servicio = s.id_servicio;*/
+
+-- Obtener Información Completa de Turnos con Servicios
+SELECT t.id_turno, t.fecha, v.marca, v.modelo, u.nombre, u.apellido, s.nombre AS servicio, s.costo
+FROM turno t
+JOIN turno_servicio ts ON t.id_turno = ts.id_turno
+JOIN servicio s ON ts.id_servicio = s.id_servicio
+JOIN vehiculo v ON t.id_vehiculo = v.id_vehiculo
+JOIN cliente c ON t.dni_cliente = c.dni
+JOIN usuario u ON c.dni = u.dni
+where u.dni = 31415926;
+
+-- Calcular el Costo Total de Servicios por Turno
+/*SELECT t.id_turno, u.nombre, t.fecha, SUM(s.costo) AS costo_total
+FROM turno t
+JOIN cliente c on t.dni_cliente = c.dni
+JOIN usuario u on c.dni = u.dni
+JOIN turno_servicio ts ON t.id_turno = ts.id_turno
+JOIN servicio s ON ts.id_servicio = s.id_servicio
+GROUP BY t.id_turno, u.nombre, t.fecha;*/
+
+-- prueba de eliminacion de clientes
+
+-- aun no esta
+/*CREATE PROCEDURE sp_EliminarCliente
+    @dni_cliente BIGINT
+AS
+BEGIN
+    -- Eliminar turnos asociados
+    DELETE FROM turno_servicio
+    WHERE id_turno IN (
+        SELECT id_turno FROM turno
+        WHERE dni_cliente = @dni_cliente
+    );
+
+    DELETE FROM turno
+    WHERE dni_cliente = @dni_cliente;
+
+    -- Eliminar vehículos asociados
+    DELETE FROM vehiculo
+    WHERE dni_cliente = @dni_cliente;
+
+    -- Eliminar el cliente
+    DELETE FROM cliente
+    WHERE dni = @dni_cliente;
+END;*/
+
+
+-- Eliminar turnos asociados
+    DELETE FROM turno_servicio
+    WHERE id_turno IN (
+        SELECT id_turno FROM turno
+        WHERE dni_cliente = 31415926
+    );
+
+    DELETE FROM turno
+    WHERE dni_cliente = 31415926;
+
+    -- Eliminar vehículos asociados
+    DELETE FROM vehiculo
+    WHERE dni_cliente = 31415926;
+
+	-- antes de eliminar el cliente le sacamos los roles posibles y le pongo vacio
+	-- porque aun existira en tabla usuario
+	UPDATE usuario SET rol = '' WHERE dni = 31415926;
+
+    -- Eliminar el cliente
+    DELETE FROM cliente
+    WHERE dni = 31415926;
+
+
+
+select * from usuario;
+select * from cliente;
+
+
 
 -- ************************************ SEDEERS ***********************************************
 
@@ -113,9 +245,18 @@ VALUES
 -- Actualizar roles de usuarios que son mecánicos
 -- UPDATE usuario SET rol = 'Mecanico' WHERE dni IN (SELECT dni FROM mecanico);
 
+-- agrego los clientes
+/*INSERT INTO cliente(dni, fechaIngreso, domicilio, RegimenLaboral)
+VALUES
+(123456, GETDATE(), 'Direccion 1', 'Exento'),
+(31415926, GETDATE(), 'Direccion 2', 'Monotributista'),
+(46813579, GETDATE(), 'Direccion 3', 'Responsable Inscripto'),
+(54321098, GETDATE(), 'Direccion 4', 'Responsable Inscripto'),
+(98765432, GETDATE(), 'Direccion 5', 'Exento');*/
 
 
 -- ******************************************** PROCEDIMIENTOS ALMACENADOS ********************************************************************
+-- De la tabla MECANICO
 -- esta
 /*CREATE PROCEDURE agregar_mecanico
 	@dni BIGINT,
@@ -178,6 +319,7 @@ BEGIN
 	WHERE m.dni = @dni
 END*/
 
+-- De la tabla CLIENTE
 -- esta
 /*CREATE PROCEDURE agregar_cliente
 	@dni BIGINT,
@@ -268,7 +410,7 @@ BEGIN
 	UPDATE cliente SET domicilio = @domicilio WHERE dni = @dni;
 END*/
 
-
+-- De la tabla USUARIO
 -- esta
 /*CREATE PROCEDURE listar_usuarios
 AS
@@ -304,13 +446,110 @@ BEGIN
 	WHERE u.dni = @dni AND c.dni IS NULL AND m.dni IS NULL;
 END*/
 
+-- De la tabla VEHICULOS
+-- esta -- usado
+/*CREATE PROCEDURE agregar_vehiculo
+	@marca VARCHAR(45),
+	@modelo VARCHAR(45),
+	@anio INT,
+	@dni_cliente BIGINT
+AS
+BEGIN
+	INSERT INTO vehiculo(marca, modelo, anio, dni_cliente)
+	VALUES(@marca, @modelo, @anio, @dni_cliente)
+END*/
+
+-- esta -- usado
+/*CREATE PROCEDURE actualizar_vehiculo
+	@id_vehiculo INT,
+	@marca VARCHAR(45),
+	@modelo VARCHAR(45),
+	@anio INT,
+	@dni_cliente BIGINT
+AS
+BEGIN
+	UPDATE vehiculo 
+	SET 
+	marca = @marca, 
+	modelo = @modelo, 
+	anio = @anio
+	WHERE id_vehiculo = @id_vehiculo AND dni_cliente = @dni_cliente
+END*/
+
+-- esta -- usado
+/*CREATE PROCEDURE buscar_vehiculo
+	@id_vehiculo INT
+AS
+BEGIN
+	SELECT 
+		id_vehiculo,
+		marca,
+		modelo,
+		anio,
+		dni_cliente
+	FROM vehiculo
+	WHERE id_vehiculo = @id_vehiculo;
+END*/
+
+select * from vehiculo;
+
+select * from vehiculo where id_vehiculo = 3 and dni_cliente = 12345678;
+
+-- esta -- usado
+/*CREATE PROCEDURE verificar_vehiculo_a_modificar
+	@id_vehiculo INT,
+	@dni_cliente BIGINT
+AS
+BEGIN
+	SELECT 
+		1
+	FROM vehiculo
+	WHERE id_vehiculo = @id_vehiculo AND dni_cliente = @dni_cliente;
+END*/
+
+-- esta -- usado
+/*CREATE PROCEDURE listar_vehiculos_de_un_cliente
+	@dni_cliente BIGINT
+AS
+BEGIN
+	select
+		v.id_vehiculo,
+		v.marca,
+		v.modelo,
+		v.anio
+	from vehiculo v
+	join cliente c on v.dni_cliente = c.dni
+	where c.dni = @dni_cliente;
+END*/
+
+select
+		v.id_vehiculo,
+		v.marca,
+		v.modelo,
+		v.anio
+	from vehiculo v
+	join cliente c on v.dni_cliente = c.dni
+	where c.dni = 12345678;
+
+	UPDATE vehiculo 
+	SET 
+	marca = 'Ford', 
+	modelo = 'Ecosport', 
+	anio = 2018
+	WHERE id_vehiculo = 2 AND dni_cliente = 12345678
+
+select * from usuario;
+
+
 --	****************************************************** CONSULTAS ******************************************************************
 -- listar todos los datos de las tablas
-select * from usuario;
+select * from usuario u left join mecanico m on u.dni = m.dni where rol = 'Mecanico' and sueldo >= 50000;
 select * from cliente;
 
+-- select * from vehiculo;
+
 -- listar los mecanicos
-/*select 
+select 
 	u.dni,
 	u.nombre,
 	u.apellido,
@@ -321,7 +560,7 @@ select * from cliente;
 	m.sueldo
 from mecanico m
 left join usuario u on m.dni = u.dni
-order by m.sueldo desc;*/
+order by m.sueldo desc;
 
 -- listar los clientes
 select
@@ -345,19 +584,22 @@ LEFT JOIN usuario u ON c.dni = u.dni
 WHERE c.dni = 234567890;
 
 -- Listar todos los usuarios que no son ni clientes ni mecanicos
+-- NO USUARIAMOS
 /*SELECT
 	u.dni,
 	u.nombre,
 	u.apellido,
 	u.contrasena,
 	u.correo,
-	u.telefono
+	u.telefono,
+	u.rol
 FROM usuario u
 LEFT JOIN cliente c ON u.dni = c.dni
 LEFT JOIN mecanico m ON u.dni = m.dni
 WHERE c.dni IS NULL AND m.dni IS NULL;*/
 
 -- Buscar usuario que no es ni cliente ni mecanico
+-- NO USARIAMOS
 /*SELECT
 	u.dni,
 	u.nombre,

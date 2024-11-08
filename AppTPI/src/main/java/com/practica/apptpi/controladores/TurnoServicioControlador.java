@@ -1,7 +1,7 @@
 package com.practica.apptpi.controladores;
 
-public class ServicioControlador {
-    
+public class TurnoServicioControlador {
+
     
     
 }
